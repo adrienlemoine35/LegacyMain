@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { ProductTable } from "@/components/product-table"
+import { ProductTableV2 } from "@/components/product-table-v2"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +15,22 @@ import {
   type PromoBookProduct,
 } from "@/components/promobook-panel"
 
+// Types
+export type PromotionType = "absolute" | "percentage" | "free" | null
+
+export type { PromoConfig }
+export interface PromoConfig {
+  id: string
+  currentPrice: number | null
+  promotionType: PromotionType
+  promotionValue: number | null
+  minQuantity: number | null
+  startDate: string | null
+  endDate: string | null
+  gamme: "M" | "D"
+  label?: string // Optional label like "Promo Été", "Black Friday", etc.
+}
+
 // Mock data
 const MOCK_PRODUCTS = [
   {
@@ -22,15 +39,32 @@ const MOCK_PRODUCTS = [
     category: "Outillage électrique",
     supplier: "Bosch",
     initialPrice: 149.99,
-    currentPrice: null as number | null,
     stock: 45,
     status: "draft",
-    promotionType: null as PromotionType,
-    promotionValue: null as number | null,
-    minQuantity: null as number | null,
-    startDate: null as string | null,
-    endDate: null as string | null,
-    gamme: "M" as "M" | "D",
+    promoConfigs: [
+      {
+        id: "pc1",
+        currentPrice: 129.99,
+        promotionType: "absolute" as PromotionType,
+        promotionValue: 20,
+        minQuantity: null,
+        startDate: "2024-06-01",
+        endDate: "2024-08-31",
+        gamme: "M" as "M" | "D",
+        label: "Promo Été 2024",
+      },
+      {
+        id: "pc2",
+        currentPrice: 119.99,
+        promotionType: "absolute" as PromotionType,
+        promotionValue: 30,
+        minQuantity: 5,
+        startDate: "2024-09-01",
+        endDate: "2024-09-30",
+        gamme: "M" as "M" | "D",
+        label: "Achat en volume",
+      },
+    ],
   },
   {
     id: "P002",
@@ -38,31 +72,87 @@ const MOCK_PRODUCTS = [
     category: "Outillage électrique",
     supplier: "Bosch",
     initialPrice: 299.99,
-    currentPrice: null as number | null,
     stock: 12,
     status: "draft",
-    promotionType: null as PromotionType,
-    promotionValue: null as number | null,
-    minQuantity: null as number | null,
-    startDate: null as string | null,
-    endDate: null as string | null,
-    gamme: "D" as "M" | "D",
+    promoConfigs: [
+      {
+        id: "pc3",
+        currentPrice: 269.99,
+        promotionType: "absolute" as PromotionType,
+        promotionValue: 30,
+        minQuantity: null,
+        startDate: "2024-06-01",
+        endDate: "2024-08-31",
+        gamme: "D" as "M" | "D",
+        label: "Promo Été 2024",
+      },
+      {
+        id: "pc4",
+        currentPrice: 239.99,
+        promotionType: "percentage" as PromotionType,
+        promotionValue: 20,
+        minQuantity: 3,
+        startDate: "2024-11-25",
+        endDate: "2024-11-29",
+        gamme: "D" as "M" | "D",
+        label: "Black Friday",
+      },
+      {
+        id: "pc5",
+        currentPrice: 254.99,
+        promotionType: "absolute" as PromotionType,
+        promotionValue: 45,
+        minQuantity: 10,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        gamme: "D" as "M" | "D",
+        label: "Pro - Volume",
+      },
+    ],
   },
   {
-    id: "P003",
-    name: "Scie circulaire 1200W",
-    category: "Outillage électrique",
-    supplier: "Makita",
-    initialPrice: 189.99,
-    currentPrice: null as number | null,
-    stock: 28,
+    id: "P009",
+    name: "Peinture murale blanche 10L",
+    category: "Peinture",
+    supplier: "Dulux",
+    initialPrice: 45.99,
+    stock: 89,
     status: "draft",
-    promotionType: null as PromotionType,
-    promotionValue: null as number | null,
-    minQuantity: null as number | null,
-    startDate: null as string | null,
-    endDate: null as string | null,
-    gamme: "M" as "M" | "D",
+    promoConfigs: [
+      {
+        id: "pc6",
+        currentPrice: 39.99,
+        promotionType: "absolute" as PromotionType,
+        promotionValue: 6,
+        minQuantity: null,
+        startDate: "2024-03-01",
+        endDate: "2024-03-31",
+        gamme: "M" as "M" | "D",
+        label: "Printemps 2024",
+      },
+      {
+        id: "pc7",
+        currentPrice: 36.79,
+        promotionType: "percentage" as PromotionType,
+        promotionValue: 20,
+        minQuantity: 5,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        gamme: "M" as "M" | "D",
+        label: "Pro - Volume annuel",
+      },
+      {
+        id: "pc8",
+        currentPrice: 32.19,
+        promotionType: "percentage" as PromotionType,
+        promotionValue: 30,
+        minQuantity: 2,
+        startDate: "2024-11-25",
+        endDate: "2024-11-29",
+        gamme: "D" as "M" | "D",
+        label: "Black Friday",
+      },
+    ],
   },
   {
     id: "P004",
@@ -499,7 +589,6 @@ const MOCK_PRODUCTS = [
 ]
 
 export type Product = (typeof MOCK_PRODUCTS)[0]
-export type PromotionType = "absolute" | "percentage" | "free" | null
 
 export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS)
@@ -742,6 +831,39 @@ export default function ProductManagement() {
     }
   }
 
+  // Promo Config handlers
+  const handleAddPromoConfig = (productId: string, config: PromoConfig) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, promoConfigs: [...p.promoConfigs, config] } : p))
+    )
+  }
+
+  const handleUpdatePromoConfig = (productId: string, configId: string, updates: Partial<PromoConfig>) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              promoConfigs: p.promoConfigs.map((c) => (c.id === configId ? { ...c, ...updates } : c)),
+            }
+          : p
+      )
+    )
+  }
+
+  const handleDeletePromoConfig = (productId: string, configId: string) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              promoConfigs: p.promoConfigs.filter((c) => c.id !== configId),
+            }
+          : p
+      )
+    )
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
@@ -799,24 +921,13 @@ export default function ProductManagement() {
 
         {/* Content */}
         <div className="w-full p-6">
-          <ProductTable
+          <ProductTableV2
             products={products}
             selectedProducts={selectedProducts}
             onSelectProducts={setSelectedProducts}
-            onPriceChange={handlePriceChange}
-            onDifferenceChange={handleDifferenceChange}
-            onBulkPromotion={handleBulkPromotion}
-            onMinQuantityChange={handleMinQuantityChange}
-            onDateChange={handleDateChange}
-            onGammeChange={handleGammeChange}
-            onBulkMinQuantity={handleBulkMinQuantity}
-            onBulkStartDate={handleBulkStartDate}
-            onBulkEndDate={handleBulkEndDate}
-            onBulkGamme={handleBulkGamme}
-            onBulkDelete={handleBulkDelete}
-            initialFilters={activePromoBook?.filters}
-            initialSorts={activePromoBook?.sorts}
-            resetKey={tableResetKey}
+            onAddPromoConfig={handleAddPromoConfig}
+            onUpdatePromoConfig={handleUpdatePromoConfig}
+            onDeletePromoConfig={handleDeletePromoConfig}
           />
         </div>
       </div>
