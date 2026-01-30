@@ -100,6 +100,8 @@ export function ProductTableV2({
               {products.map((product) => {
                 const isExpanded = expandedProducts.has(product.id)
                 const isSelected = selectedProducts.has(product.id)
+                const promoConfigs = product.promoConfigs || []
+                const hasConfigs = promoConfigs.length > 0
 
                 return (
                   <>
@@ -116,9 +118,9 @@ export function ProductTableV2({
                         <button
                           onClick={() => toggleExpanded(product.id)}
                           className="rounded p-1 hover:bg-muted"
-                          disabled={product.promoConfigs.length === 0}
+                          disabled={!hasConfigs}
                         >
-                          {product.promoConfigs.length > 0 ? (
+                          {hasConfigs ? (
                             isExpanded ? (
                               <ChevronDown className="size-4" />
                             ) : (
@@ -149,8 +151,8 @@ export function ProductTableV2({
                       </td>
                       <td className="p-4 text-left">
                         <div className="flex items-center gap-2">
-                          <Badge variant={product.promoConfigs.length > 0 ? "default" : "secondary"}>
-                            {product.promoConfigs.length}
+                          <Badge variant={hasConfigs ? "default" : "secondary"}>
+                            {promoConfigs.length}
                           </Badge>
                           <Button
                             size="sm"
@@ -179,12 +181,12 @@ export function ProductTableV2({
                     </tr>
 
                     {/* Expanded Promo Configs */}
-                    {isExpanded && product.promoConfigs.length > 0 && (
+                    {isExpanded && hasConfigs && (
                       <tr>
                         <td colSpan={9} className="bg-muted/20 p-0">
                           <div className="p-4">
                             <div className="space-y-2">
-                              {product.promoConfigs.map((config, index) => (
+                              {promoConfigs.map((config, index) => (
                                 <div
                                   key={config.id}
                                   className="flex items-center gap-4 rounded-lg border border-border bg-card p-4"
