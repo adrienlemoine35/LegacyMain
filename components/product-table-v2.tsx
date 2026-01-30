@@ -165,6 +165,8 @@ export function ProductTableV2({
                                 promotionType: null,
                                 promotionValue: null,
                                 minQuantity: null,
+                                moq: null,
+                                som: null,
                                 startDate: null,
                                 endDate: null,
                                 gamme: "M",
@@ -226,6 +228,16 @@ export function ProductTableV2({
                                     <div className="flex items-center gap-2">
                                       <span className="text-xs text-muted-foreground">Qté min:</span>
                                       <span className="text-sm">{config.minQuantity || "-"}</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-muted-foreground">MOQ:</span>
+                                      <span className="text-sm font-medium">{config.moq || "-"}</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-muted-foreground">SOM:</span>
+                                      <span className="text-sm font-medium">{config.som || "-"}</span>
                                     </div>
 
                                     <div className="flex items-center gap-2">

@@ -25,6 +25,8 @@ export interface PromoConfig {
   promotionType: PromotionType
   promotionValue: number | null
   minQuantity: number | null
+  moq: number | null // Minimum Order Quantity
+  som: number | null // Standard Order Multiple
   startDate: string | null
   endDate: string | null
   gamme: "M" | "D"
@@ -48,6 +50,8 @@ const MOCK_PRODUCTS = [
         promotionType: "absolute" as PromotionType,
         promotionValue: 20,
         minQuantity: null,
+        moq: 10,
+        som: 5,
         startDate: "2024-06-01",
         endDate: "2024-08-31",
         gamme: "M" as "M" | "D",
@@ -59,6 +63,8 @@ const MOCK_PRODUCTS = [
         promotionType: "absolute" as PromotionType,
         promotionValue: 30,
         minQuantity: 5,
+        moq: 20,
+        som: 10,
         startDate: "2024-09-01",
         endDate: "2024-09-30",
         gamme: "M" as "M" | "D",
@@ -81,6 +87,8 @@ const MOCK_PRODUCTS = [
         promotionType: "absolute" as PromotionType,
         promotionValue: 30,
         minQuantity: null,
+        moq: 5,
+        som: 1,
         startDate: "2024-06-01",
         endDate: "2024-08-31",
         gamme: "D" as "M" | "D",
@@ -92,6 +100,8 @@ const MOCK_PRODUCTS = [
         promotionType: "percentage" as PromotionType,
         promotionValue: 20,
         minQuantity: 3,
+        moq: 15,
+        som: 3,
         startDate: "2024-11-25",
         endDate: "2024-11-29",
         gamme: "D" as "M" | "D",
@@ -103,6 +113,8 @@ const MOCK_PRODUCTS = [
         promotionType: "absolute" as PromotionType,
         promotionValue: 45,
         minQuantity: 10,
+        moq: 50,
+        som: 10,
         startDate: "2024-01-01",
         endDate: "2024-12-31",
         gamme: "D" as "M" | "D",
@@ -125,6 +137,8 @@ const MOCK_PRODUCTS = [
         promotionType: "absolute" as PromotionType,
         promotionValue: 6,
         minQuantity: null,
+        moq: 12,
+        som: 6,
         startDate: "2024-03-01",
         endDate: "2024-03-31",
         gamme: "M" as "M" | "D",
@@ -136,6 +150,8 @@ const MOCK_PRODUCTS = [
         promotionType: "percentage" as PromotionType,
         promotionValue: 20,
         minQuantity: 5,
+        moq: 24,
+        som: 12,
         startDate: "2024-01-01",
         endDate: "2024-12-31",
         gamme: "M" as "M" | "D",
@@ -147,6 +163,8 @@ const MOCK_PRODUCTS = [
         promotionType: "percentage" as PromotionType,
         promotionValue: 30,
         minQuantity: 2,
+        moq: 6,
+        som: 2,
         startDate: "2024-11-25",
         endDate: "2024-11-29",
         gamme: "D" as "M" | "D",
