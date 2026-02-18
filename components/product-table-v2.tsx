@@ -229,8 +229,8 @@ export function ProductTableV2({
                                   key={config.id}
                                   className="flex items-center gap-3 rounded border border-border bg-card px-3 py-2"
                                 >
-                                  {/* Label */}
-                                  <div className="flex items-center gap-1">
+                                  {/* Label - Fixed width column */}
+                                  <div className="flex w-[160px] shrink-0 items-center gap-1">
                                     <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
                                     {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "label" ? (
                                       <Input
@@ -241,13 +241,13 @@ export function ProductTableV2({
                                           if (e.key === "Enter") saveEdit(product.id, config.id, "label")
                                           if (e.key === "Escape") cancelEdit()
                                         }}
-                                        className="h-6 w-32 text-xs"
+                                        className="h-6 flex-1 text-xs"
                                         autoFocus
                                       />
                                     ) : (
                                       <div
                                         onClick={() => startEditing(product.id, config.id, "label", config.label)}
-                                        className="inline-flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                        className="flex flex-1 cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                       >
                                         <span className="text-xs font-medium">{config.label || "Sans nom"}</span>
                                         <Pencil className="size-3 text-muted-foreground" />
@@ -257,11 +257,11 @@ export function ProductTableV2({
 
                                   <div className="h-4 w-px bg-border" />
 
-                                  {/* All fields in one line */}
+                                  {/* All fields in table-like columns */}
                                   <div className="flex flex-1 items-center gap-3 overflow-x-auto">
-                                        {/* Réduction: Type + Valeur */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Réd:</span>
+                                        {/* Réduction: Type + Valeur - Column width */}
+                                        <div className="flex w-[130px] shrink-0 items-center gap-1.5">
+                                          <span className="w-[30px] text-xs text-muted-foreground">Réd:</span>
                                           <Select
                                             value={config.promotionType || ""}
                                             onValueChange={(v) => {
@@ -286,7 +286,7 @@ export function ProductTableV2({
                                               }
                                             }}
                                           >
-                                            <SelectTrigger className="h-6 w-12 text-xs">
+                                            <SelectTrigger className="h-6 w-[45px] text-xs">
                                               <SelectValue placeholder="-" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -295,29 +295,18 @@ export function ProductTableV2({
                                               <SelectItem value="free">Gratuit</SelectItem>
                                             </SelectContent>
                                           </Select>
-                                          {config.promotionType && config.promotionType !== "free" && (
-                                            <>
-                                              {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "promotionValue" ? (
-                                                <Input
-                                                  type="number"
-                                                  step="0.01"
-                                                  value={editValue}
-                                                  onChange={(e) => setEditValue(e.target.value)}
-                                                  onBlur={() => {
-                                                    const value = Number.parseFloat(editValue)
-                                                    if (!Number.isNaN(value) && product.initialPrice) {
-                                                      const newCurrentPrice = config.promotionType === "percentage"
-                                                        ? product.initialPrice * (1 - value / 100)
-                                                        : product.initialPrice - value
-                                                      onUpdatePromoConfig(product.id, config.id, { 
-                                                        promotionValue: value,
-                                                        currentPrice: newCurrentPrice
-                                                      })
-                                                    }
-                                                    setEditingField(null)
-                                                  }}
-                                                  onKeyDown={(e) => {
-                                                    if (e.key === "Enter") {
+                                          <div className="w-[50px]">
+                                            {config.promotionType === "free" ? (
+                                              <span className="text-xs font-medium text-muted-foreground">Gratuit</span>
+                                            ) : config.promotionType && (
+                                              <>
+                                                {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "promotionValue" ? (
+                                                  <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={editValue}
+                                                    onChange={(e) => setEditValue(e.target.value)}
+                                                    onBlur={() => {
                                                       const value = Number.parseFloat(editValue)
                                                       if (!Number.isNaN(value) && product.initialPrice) {
                                                         const newCurrentPrice = config.promotionType === "percentage"
@@ -329,19 +318,92 @@ export function ProductTableV2({
                                                         })
                                                       }
                                                       setEditingField(null)
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                      if (e.key === "Enter") {
+                                                        const value = Number.parseFloat(editValue)
+                                                        if (!Number.isNaN(value) && product.initialPrice) {
+                                                          const newCurrentPrice = config.promotionType === "percentage"
+                                                            ? product.initialPrice * (1 - value / 100)
+                                                            : product.initialPrice - value
+                                                          onUpdatePromoConfig(product.id, config.id, { 
+                                                            promotionValue: value,
+                                                            currentPrice: newCurrentPrice
+                                                          })
+                                                        }
+                                                        setEditingField(null)
+                                                      }
+                                                      if (e.key === "Escape") cancelEdit()
+                                                    }}
+                                                    className="h-6 w-full text-xs"
+                                                    autoFocus
+                                                  />
+                                                ) : (
+                                                  <div
+                                                    onClick={() => startEditing(product.id, config.id, "promotionValue", config.promotionValue)}
+                                                    className="cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
+                                                  >
+                                                    <span className="text-xs font-medium">
+                                                      {config.promotionValue ? `${config.promotionValue}${config.promotionType === "percentage" ? "%" : "€"}` : "-"}
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Prix après promo - Column */}
+                                        <div className="flex w-[170px] shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Prix après Promo:</span>
+                                          {config.promotionType === "free" ? (
+                                            <span className="text-xs font-medium text-muted-foreground">Gratuit</span>
+                                          ) : (
+                                            <>
+                                              {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "currentPrice" ? (
+                                                <Input
+                                                  type="number"
+                                                  step="0.01"
+                                                  value={editValue}
+                                                  onChange={(e) => setEditValue(e.target.value)}
+                                                  onBlur={() => {
+                                                    const newPrice = Number.parseFloat(editValue)
+                                                    if (!Number.isNaN(newPrice) && product.initialPrice) {
+                                                      // Calculate reduction as absolute value (default)
+                                                      const reduction = product.initialPrice - newPrice
+                                                      onUpdatePromoConfig(product.id, config.id, { 
+                                                        currentPrice: newPrice,
+                                                        promotionType: "absolute",
+                                                        promotionValue: reduction
+                                                      })
+                                                    }
+                                                    setEditingField(null)
+                                                  }}
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                      const newPrice = Number.parseFloat(editValue)
+                                                      if (!Number.isNaN(newPrice) && product.initialPrice) {
+                                                        const reduction = product.initialPrice - newPrice
+                                                        onUpdatePromoConfig(product.id, config.id, { 
+                                                          currentPrice: newPrice,
+                                                          promotionType: "absolute",
+                                                          promotionValue: reduction
+                                                        })
+                                                      }
+                                                      setEditingField(null)
                                                     }
                                                     if (e.key === "Escape") cancelEdit()
                                                   }}
-                                                  className="h-6 w-16 text-xs"
+                                                  className="h-6 w-[65px] text-xs"
                                                   autoFocus
                                                 />
                                               ) : (
                                                 <div
-                                                  onClick={() => startEditing(product.id, config.id, "promotionValue", config.promotionValue)}
-                                                  className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                                  onClick={() => startEditing(product.id, config.id, "currentPrice", config.currentPrice)}
+                                                  className="cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
                                                 >
                                                   <span className="text-xs font-medium">
-                                                    {config.promotionValue ? `${config.promotionValue}${config.promotionType === "percentage" ? "%" : "€"}` : "-"}
+                                                    {config.currentPrice ? `${config.currentPrice.toFixed(2)}€` : "-"}
                                                   </span>
                                                 </div>
                                               )}
@@ -349,60 +411,8 @@ export function ProductTableV2({
                                           )}
                                         </div>
 
-                                        {/* Prix après promo */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Prix après Promo:</span>
-                                          {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "currentPrice" ? (
-                                            <Input
-                                              type="number"
-                                              step="0.01"
-                                              value={editValue}
-                                              onChange={(e) => setEditValue(e.target.value)}
-                                              onBlur={() => {
-                                                const newPrice = Number.parseFloat(editValue)
-                                                if (!Number.isNaN(newPrice) && product.initialPrice) {
-                                                  // Calculate reduction as absolute value (default)
-                                                  const reduction = product.initialPrice - newPrice
-                                                  onUpdatePromoConfig(product.id, config.id, { 
-                                                    currentPrice: newPrice,
-                                                    promotionType: "absolute",
-                                                    promotionValue: reduction
-                                                  })
-                                                }
-                                                setEditingField(null)
-                                              }}
-                                              onKeyDown={(e) => {
-                                                if (e.key === "Enter") {
-                                                  const newPrice = Number.parseFloat(editValue)
-                                                  if (!Number.isNaN(newPrice) && product.initialPrice) {
-                                                    const reduction = product.initialPrice - newPrice
-                                                    onUpdatePromoConfig(product.id, config.id, { 
-                                                      currentPrice: newPrice,
-                                                      promotionType: "absolute",
-                                                      promotionValue: reduction
-                                                    })
-                                                  }
-                                                  setEditingField(null)
-                                                }
-                                                if (e.key === "Escape") cancelEdit()
-                                              }}
-                                              className="h-6 w-20 text-xs"
-                                              autoFocus
-                                            />
-                                          ) : (
-                                            <div
-                                              onClick={() => startEditing(product.id, config.id, "currentPrice", config.currentPrice)}
-                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
-                                            >
-                                              <span className="text-xs font-medium">
-                                                {config.currentPrice ? `${config.currentPrice.toFixed(2)}€` : "-"}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        {/* Quantité minimale */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* Quantité minimale - Column */}
+                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">Qmin:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "minQuantity" ? (
                                             <Input
@@ -415,21 +425,21 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "minQuantity")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-6 w-14 text-xs"
+                                              className="h-6 w-[35px] text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "minQuantity", config.minQuantity)}
-                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
                                             >
                                               <span className="text-xs">{config.minQuantity || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
-                                        {/* MOQ */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* MOQ - Column */}
+                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">MOQ:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "moq" ? (
                                             <Input
@@ -442,21 +452,21 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "moq")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-6 w-14 text-xs"
+                                              className="h-6 w-[35px] text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "moq", config.moq)}
-                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
                                             >
                                               <span className="text-xs font-medium">{config.moq || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
-                                        {/* SOM */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* SOM - Column */}
+                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">SOM:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "som" ? (
                                             <Input
@@ -469,25 +479,25 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "som")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-6 w-14 text-xs"
+                                              className="h-6 w-[35px] text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "som", config.som)}
-                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
                                             >
                                               <span className="text-xs font-medium">{config.som || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
-                                        {/* Date début */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* Date début - Column */}
+                                        <div className="flex w-[130px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">Début:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
-                                              <Button variant="outline" className="h-6 w-24 justify-start text-xs font-normal bg-transparent">
+                                              <Button variant="outline" className="h-6 flex-1 justify-start text-xs font-normal bg-transparent">
                                                 <CalendarIcon className="mr-1 size-3" />
                                                 {config.startDate ? format(new Date(config.startDate), "dd/MM/yy") : "-"}
                                               </Button>
@@ -509,12 +519,12 @@ export function ProductTableV2({
                                           </Popover>
                                         </div>
 
-                                        {/* Date fin */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* Date fin - Column */}
+                                        <div className="flex w-[110px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">Fin:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
-                                              <Button variant="outline" className="h-6 w-24 justify-start text-xs font-normal bg-transparent">
+                                              <Button variant="outline" className="h-6 flex-1 justify-start text-xs font-normal bg-transparent">
                                                 <CalendarIcon className="mr-1 size-3" />
                                                 {config.endDate ? format(new Date(config.endDate), "dd/MM/yy") : "-"}
                                               </Button>
@@ -536,14 +546,14 @@ export function ProductTableV2({
                                           </Popover>
                                         </div>
 
-                                        {/* Gamme */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
+                                        {/* Gamme - Column */}
+                                        <div className="flex w-[90px] shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">Gamme:</span>
                                           <Select
                                             value={config.gamme}
                                             onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { gamme: v as "M" | "D" })}
                                           >
-                                            <SelectTrigger className="h-6 w-12 text-xs">
+                                            <SelectTrigger className="h-6 w-[45px] text-xs">
                                               <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
