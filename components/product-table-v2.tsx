@@ -259,14 +259,34 @@ export function ProductTableV2({
 
                                   {/* All fields in one line */}
                                   <div className="flex flex-1 items-center gap-3 overflow-x-auto">
-                                        {/* Type de réduction */}
+                                        {/* Réduction: Type + Valeur */}
                                         <div className="flex shrink-0 items-center gap-1.5">
                                           <span className="text-xs text-muted-foreground">Réd:</span>
                                           <Select
                                             value={config.promotionType || ""}
-                                            onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { promotionType: v as PromotionType })}
+                                            onValueChange={(v) => {
+                                              const newType = v as PromotionType
+                                              // Calculate currentPrice if we have promotionValue
+                                              if (newType !== "free" && config.promotionValue && product.initialPrice) {
+                                                const newCurrentPrice = newType === "percentage" 
+                                                  ? product.initialPrice * (1 - config.promotionValue / 100)
+                                                  : product.initialPrice - config.promotionValue
+                                                onUpdatePromoConfig(product.id, config.id, { 
+                                                  promotionType: newType,
+                                                  currentPrice: newCurrentPrice 
+                                                })
+                                              } else if (newType === "free") {
+                                                onUpdatePromoConfig(product.id, config.id, { 
+                                                  promotionType: newType,
+                                                  currentPrice: 0,
+                                                  promotionValue: 0
+                                                })
+                                              } else {
+                                                onUpdatePromoConfig(product.id, config.id, { promotionType: newType })
+                                              }
+                                            }}
                                           >
-                                            <SelectTrigger className="h-6 w-20 text-xs">
+                                            <SelectTrigger className="h-6 w-12 text-xs">
                                               <SelectValue placeholder="-" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -275,6 +295,58 @@ export function ProductTableV2({
                                               <SelectItem value="free">Gratuit</SelectItem>
                                             </SelectContent>
                                           </Select>
+                                          {config.promotionType && config.promotionType !== "free" && (
+                                            <>
+                                              {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "promotionValue" ? (
+                                                <Input
+                                                  type="number"
+                                                  step="0.01"
+                                                  value={editValue}
+                                                  onChange={(e) => setEditValue(e.target.value)}
+                                                  onBlur={() => {
+                                                    const value = Number.parseFloat(editValue)
+                                                    if (!Number.isNaN(value) && product.initialPrice) {
+                                                      const newCurrentPrice = config.promotionType === "percentage"
+                                                        ? product.initialPrice * (1 - value / 100)
+                                                        : product.initialPrice - value
+                                                      onUpdatePromoConfig(product.id, config.id, { 
+                                                        promotionValue: value,
+                                                        currentPrice: newCurrentPrice
+                                                      })
+                                                    }
+                                                    setEditingField(null)
+                                                  }}
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                      const value = Number.parseFloat(editValue)
+                                                      if (!Number.isNaN(value) && product.initialPrice) {
+                                                        const newCurrentPrice = config.promotionType === "percentage"
+                                                          ? product.initialPrice * (1 - value / 100)
+                                                          : product.initialPrice - value
+                                                        onUpdatePromoConfig(product.id, config.id, { 
+                                                          promotionValue: value,
+                                                          currentPrice: newCurrentPrice
+                                                        })
+                                                      }
+                                                      setEditingField(null)
+                                                    }
+                                                    if (e.key === "Escape") cancelEdit()
+                                                  }}
+                                                  className="h-6 w-16 text-xs"
+                                                  autoFocus
+                                                />
+                                              ) : (
+                                                <div
+                                                  onClick={() => startEditing(product.id, config.id, "promotionValue", config.promotionValue)}
+                                                  className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                                >
+                                                  <span className="text-xs font-medium">
+                                                    {config.promotionValue ? `${config.promotionValue}${config.promotionType === "percentage" ? "%" : "€"}` : "-"}
+                                                  </span>
+                                                </div>
+                                              )}
+                                            </>
+                                          )}
                                         </div>
 
                                         {/* Prix après promo */}
@@ -286,9 +358,32 @@ export function ProductTableV2({
                                               step="0.01"
                                               value={editValue}
                                               onChange={(e) => setEditValue(e.target.value)}
-                                              onBlur={() => saveEdit(product.id, config.id, "currentPrice")}
+                                              onBlur={() => {
+                                                const newPrice = Number.parseFloat(editValue)
+                                                if (!Number.isNaN(newPrice) && product.initialPrice) {
+                                                  // Calculate reduction as absolute value (default)
+                                                  const reduction = product.initialPrice - newPrice
+                                                  onUpdatePromoConfig(product.id, config.id, { 
+                                                    currentPrice: newPrice,
+                                                    promotionType: "absolute",
+                                                    promotionValue: reduction
+                                                  })
+                                                }
+                                                setEditingField(null)
+                                              }}
                                               onKeyDown={(e) => {
-                                                if (e.key === "Enter") saveEdit(product.id, config.id, "currentPrice")
+                                                if (e.key === "Enter") {
+                                                  const newPrice = Number.parseFloat(editValue)
+                                                  if (!Number.isNaN(newPrice) && product.initialPrice) {
+                                                    const reduction = product.initialPrice - newPrice
+                                                    onUpdatePromoConfig(product.id, config.id, { 
+                                                      currentPrice: newPrice,
+                                                      promotionType: "absolute",
+                                                      promotionValue: reduction
+                                                    })
+                                                  }
+                                                  setEditingField(null)
+                                                }
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
                                               className="h-6 w-20 text-xs"
@@ -305,37 +400,6 @@ export function ProductTableV2({
                                             </div>
                                           )}
                                         </div>
-
-                                        {/* Valeur de réduction */}
-                                        {config.promotionType && config.promotionType !== "free" && (
-                                          <div className="flex shrink-0 items-center gap-1.5">
-                                            <span className="text-xs text-muted-foreground">Val:</span>
-                                            {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "promotionValue" ? (
-                                              <Input
-                                                type="number"
-                                                step="0.01"
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                                onBlur={() => saveEdit(product.id, config.id, "promotionValue")}
-                                                onKeyDown={(e) => {
-                                                  if (e.key === "Enter") saveEdit(product.id, config.id, "promotionValue")
-                                                  if (e.key === "Escape") cancelEdit()
-                                                }}
-                                                className="h-6 w-16 text-xs"
-                                                autoFocus
-                                              />
-                                            ) : (
-                                              <div
-                                                onClick={() => startEditing(product.id, config.id, "promotionValue", config.promotionValue)}
-                                                className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
-                                              >
-                                                <span className="text-xs font-medium">
-                                                  {config.promotionValue || "-"}
-                                                </span>
-                                              </div>
-                                            )}
-                                          </div>
-                                        )}
 
                                         {/* Quantité minimale */}
                                         <div className="flex shrink-0 items-center gap-1.5">
