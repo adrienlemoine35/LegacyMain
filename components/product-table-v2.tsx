@@ -227,112 +227,89 @@ export function ProductTableV2({
                               {promoConfigs.map((config, index) => (
                                 <div
                                   key={config.id}
-                                  className="rounded-lg border border-border bg-card p-4"
+                                  className="flex items-center gap-3 rounded border border-border bg-card px-3 py-2"
                                 >
-                                  <div className="flex items-start justify-between gap-4">
-                                    <div className="min-w-0 flex-1 space-y-3">
-                                      {/* Header */}
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                                        {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "label" ? (
-                                          <div className="flex items-center gap-2">
+                                  {/* Label */}
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
+                                    {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "label" ? (
+                                      <Input
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        onBlur={() => saveEdit(product.id, config.id, "label")}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") saveEdit(product.id, config.id, "label")
+                                          if (e.key === "Escape") cancelEdit()
+                                        }}
+                                        className="h-6 w-32 text-xs"
+                                        autoFocus
+                                      />
+                                    ) : (
+                                      <div
+                                        onClick={() => startEditing(product.id, config.id, "label", config.label)}
+                                        className="inline-flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
+                                      >
+                                        <span className="text-xs font-medium">{config.label || "Sans nom"}</span>
+                                        <Pencil className="size-3 text-muted-foreground" />
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="h-4 w-px bg-border" />
+
+                                  {/* All fields in one line */}
+                                  <div className="flex flex-1 items-center gap-3 overflow-x-auto">
+                                        {/* Prix actuel */}
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Prix:</span>
+                                          {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "currentPrice" ? (
                                             <Input
+                                              type="number"
+                                              step="0.01"
                                               value={editValue}
                                               onChange={(e) => setEditValue(e.target.value)}
-                                              onBlur={() => saveEdit(product.id, config.id, "label")}
+                                              onBlur={() => saveEdit(product.id, config.id, "currentPrice")}
                                               onKeyDown={(e) => {
-                                                if (e.key === "Enter") saveEdit(product.id, config.id, "label")
+                                                if (e.key === "Enter") saveEdit(product.id, config.id, "currentPrice")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-7 w-40"
+                                              className="h-6 w-20 text-xs"
                                               autoFocus
                                             />
-                                          </div>
-                                        ) : (
-                                          <div
-                                            onClick={() => startEditing(product.id, config.id, "label", config.label)}
-                                            className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-0.5 transition-colors hover:bg-muted"
-                                          >
-                                            <Badge variant="outline" className="text-xs">
-                                              {config.label || "Sans nom"}
-                                            </Badge>
-                                            <Pencil className="size-3 text-muted-foreground" />
-                                          </div>
-                                        )}
-                                      </div>
-                                      
-                                      {/* Grid of editable fields */}
-                                      <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
-                                        {/* Prix actuel */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Prix actuel</span>
-                                          {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "currentPrice" ? (
-                                            <div className="flex items-center gap-1">
-                                              <Input
-                                                type="number"
-                                                step="0.01"
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                                onBlur={() => saveEdit(product.id, config.id, "currentPrice")}
-                                                onKeyDown={(e) => {
-                                                  if (e.key === "Enter") saveEdit(product.id, config.id, "currentPrice")
-                                                  if (e.key === "Escape") cancelEdit()
-                                                }}
-                                                className="h-7 w-20 text-sm"
-                                                autoFocus
-                                              />
-                                              <span className="text-sm">€</span>
-                                            </div>
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "currentPrice", config.currentPrice)}
-                                              className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                             >
-                                              <span className="text-sm font-medium">
-                                                {config.currentPrice ? `${config.currentPrice.toFixed(2)} €` : "-"}
+                                              <span className="text-xs font-medium">
+                                                {config.currentPrice ? `${config.currentPrice.toFixed(2)}€` : "-"}
                                               </span>
-                                              <Pencil className="size-3 text-muted-foreground" />
                                             </div>
                                           )}
                                         </div>
 
                                         {/* Type de réduction */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Réduction</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Réd:</span>
                                           <Select
                                             value={config.promotionType || ""}
                                             onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { promotionType: v as PromotionType })}
                                           >
-                                            <SelectTrigger className="h-8 w-full">
-                                              <SelectValue placeholder="Type" />
+                                            <SelectTrigger className="h-6 w-20 text-xs">
+                                              <SelectValue placeholder="-" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                              <SelectItem value="absolute">
-                                                <div className="flex items-center gap-2">
-                                                  <Euro className="size-4" />
-                                                  <span>Nette</span>
-                                                </div>
-                                              </SelectItem>
-                                              <SelectItem value="percentage">
-                                                <div className="flex items-center gap-2">
-                                                  <Percent className="size-4" />
-                                                  <span>%</span>
-                                                </div>
-                                              </SelectItem>
-                                              <SelectItem value="free">
-                                                <div className="flex items-center gap-2">
-                                                  <Gift className="size-4" />
-                                                  <span>Gratuit</span>
-                                                </div>
-                                              </SelectItem>
+                                              <SelectItem value="absolute">€</SelectItem>
+                                              <SelectItem value="percentage">%</SelectItem>
+                                              <SelectItem value="free">Gratuit</SelectItem>
                                             </SelectContent>
                                           </Select>
                                         </div>
 
                                         {/* Valeur de réduction */}
                                         {config.promotionType && config.promotionType !== "free" && (
-                                          <div className="flex flex-col gap-1">
-                                            <span className="text-xs text-muted-foreground">Valeur</span>
+                                          <div className="flex shrink-0 items-center gap-1.5">
+                                            <span className="text-xs text-muted-foreground">Val:</span>
                                             {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "promotionValue" ? (
                                               <Input
                                                 type="number"
@@ -344,30 +321,25 @@ export function ProductTableV2({
                                                   if (e.key === "Enter") saveEdit(product.id, config.id, "promotionValue")
                                                   if (e.key === "Escape") cancelEdit()
                                                 }}
-                                                className="h-7 w-20 text-sm"
+                                                className="h-6 w-16 text-xs"
                                                 autoFocus
                                               />
                                             ) : (
                                               <div
                                                 onClick={() => startEditing(product.id, config.id, "promotionValue", config.promotionValue)}
-                                                className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted"
+                                                className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                               >
-                                                <span className="text-sm font-medium">
-                                                  {config.promotionValue
-                                                    ? config.promotionType === "percentage"
-                                                      ? `${config.promotionValue}%`
-                                                      : `${config.promotionValue}€`
-                                                    : "-"}
+                                                <span className="text-xs font-medium">
+                                                  {config.promotionValue || "-"}
                                                 </span>
-                                                <Pencil className="size-3 text-muted-foreground" />
                                               </div>
                                             )}
                                           </div>
                                         )}
 
                                         {/* Quantité minimale */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Qté min</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Qmin:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "minQuantity" ? (
                                             <Input
                                               type="number"
@@ -379,23 +351,22 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "minQuantity")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-7 w-16 text-sm"
+                                              className="h-6 w-14 text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "minQuantity", config.minQuantity)}
-                                              className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                             >
-                                              <span className="text-sm">{config.minQuantity || "-"}</span>
-                                              <Pencil className="size-3 text-muted-foreground" />
+                                              <span className="text-xs">{config.minQuantity || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
                                         {/* MOQ */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">MOQ</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">MOQ:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "moq" ? (
                                             <Input
                                               type="number"
@@ -407,23 +378,22 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "moq")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-7 w-16 text-sm"
+                                              className="h-6 w-14 text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "moq", config.moq)}
-                                              className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                             >
-                                              <span className="text-sm font-medium">{config.moq || "-"}</span>
-                                              <Pencil className="size-3 text-muted-foreground" />
+                                              <span className="text-xs font-medium">{config.moq || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
                                         {/* SOM */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">SOM</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">SOM:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "som" ? (
                                             <Input
                                               type="number"
@@ -435,28 +405,27 @@ export function ProductTableV2({
                                                 if (e.key === "Enter") saveEdit(product.id, config.id, "som")
                                                 if (e.key === "Escape") cancelEdit()
                                               }}
-                                              className="h-7 w-16 text-sm"
+                                              className="h-6 w-14 text-xs"
                                               autoFocus
                                             />
                                           ) : (
                                             <div
                                               onClick={() => startEditing(product.id, config.id, "som", config.som)}
-                                              className="inline-flex cursor-pointer items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted"
+                                              className="cursor-pointer rounded px-1.5 py-0.5 transition-colors hover:bg-muted"
                                             >
-                                              <span className="text-sm font-medium">{config.som || "-"}</span>
-                                              <Pencil className="size-3 text-muted-foreground" />
+                                              <span className="text-xs font-medium">{config.som || "-"}</span>
                                             </div>
                                           )}
                                         </div>
 
                                         {/* Date début */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Date début</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Début:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
-                                              <Button variant="outline" className="h-8 w-full justify-start text-left text-sm font-normal bg-transparent">
-                                                <CalendarIcon className="mr-2 size-4" />
-                                                {config.startDate ? format(new Date(config.startDate), "dd/MM/yyyy") : "Date"}
+                                              <Button variant="outline" className="h-6 w-24 justify-start text-xs font-normal bg-transparent">
+                                                <CalendarIcon className="mr-1 size-3" />
+                                                {config.startDate ? format(new Date(config.startDate), "dd/MM/yy") : "-"}
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0">
@@ -477,13 +446,13 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Date fin */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Date fin</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Fin:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
-                                              <Button variant="outline" className="h-8 w-full justify-start text-left text-sm font-normal bg-transparent">
-                                                <CalendarIcon className="mr-2 size-4" />
-                                                {config.endDate ? format(new Date(config.endDate), "dd/MM/yyyy") : "Date"}
+                                              <Button variant="outline" className="h-6 w-24 justify-start text-xs font-normal bg-transparent">
+                                                <CalendarIcon className="mr-1 size-3" />
+                                                {config.endDate ? format(new Date(config.endDate), "dd/MM/yy") : "-"}
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0">
@@ -504,13 +473,13 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Gamme */}
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-xs text-muted-foreground">Gamme</span>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Gamme:</span>
                                           <Select
                                             value={config.gamme}
                                             onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { gamme: v as "M" | "D" })}
                                           >
-                                            <SelectTrigger className="h-8 w-20">
+                                            <SelectTrigger className="h-6 w-12 text-xs">
                                               <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -520,16 +489,15 @@ export function ProductTableV2({
                                           </Select>
                                         </div>
                                       </div>
-                                    </div>
 
                                     {/* Delete button */}
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                      className="h-6 w-6 shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                       onClick={() => onDeletePromoConfig(product.id, config.id)}
                                     >
-                                      <X className="size-4" />
+                                      <X className="size-3" />
                                     </Button>
                                   </div>
                                 </div>
