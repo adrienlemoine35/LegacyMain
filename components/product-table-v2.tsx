@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { Product, PromotionType, PromoConfig } from "@/app/page"
 
-interface ProductTableProps {
+interface ProductTableV2Props {
   products: Product[]
   selectedProducts: Set<string>
   onSelectProducts: (selected: Set<string>) => void
@@ -29,7 +29,7 @@ export function ProductTableV2({
   onAddPromoConfig,
   onUpdatePromoConfig,
   onDeletePromoConfig,
-}: ProductTableProps) {
+}: ProductTableV2Props) {
   const { toast } = useToast()
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
@@ -499,7 +499,6 @@ export function ProductTableV2({
                                     >
                                       <X className="size-3" />
                                     </Button>
-                                  </div>
                                 </div>
                               ))}
                             </div>
