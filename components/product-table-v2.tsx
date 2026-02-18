@@ -259,9 +259,27 @@ export function ProductTableV2({
 
                                   {/* All fields in one line */}
                                   <div className="flex flex-1 items-center gap-3 overflow-x-auto">
-                                        {/* Prix actuel */}
+                                        {/* Type de réduction */}
                                         <div className="flex shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Prix:</span>
+                                          <span className="text-xs text-muted-foreground">Réd:</span>
+                                          <Select
+                                            value={config.promotionType || ""}
+                                            onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { promotionType: v as PromotionType })}
+                                          >
+                                            <SelectTrigger className="h-6 w-20 text-xs">
+                                              <SelectValue placeholder="-" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="absolute">€</SelectItem>
+                                              <SelectItem value="percentage">%</SelectItem>
+                                              <SelectItem value="free">Gratuit</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+
+                                        {/* Prix après promo */}
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          <span className="text-xs text-muted-foreground">Prix après Promo:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "currentPrice" ? (
                                             <Input
                                               type="number"
@@ -286,24 +304,6 @@ export function ProductTableV2({
                                               </span>
                                             </div>
                                           )}
-                                        </div>
-
-                                        {/* Type de réduction */}
-                                        <div className="flex shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Réd:</span>
-                                          <Select
-                                            value={config.promotionType || ""}
-                                            onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { promotionType: v as PromotionType })}
-                                          >
-                                            <SelectTrigger className="h-6 w-20 text-xs">
-                                              <SelectValue placeholder="-" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="absolute">€</SelectItem>
-                                              <SelectItem value="percentage">%</SelectItem>
-                                              <SelectItem value="free">Gratuit</SelectItem>
-                                            </SelectContent>
-                                          </Select>
                                         </div>
 
                                         {/* Valeur de réduction */}
