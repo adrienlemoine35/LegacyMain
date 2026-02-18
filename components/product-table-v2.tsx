@@ -227,10 +227,10 @@ export function ProductTableV2({
                               {promoConfigs.map((config, index) => (
                                 <div
                                   key={config.id}
-                                  className="flex items-center gap-3 rounded border border-border bg-card px-3 py-2"
+                                  className="flex w-full items-center gap-3 rounded border border-border bg-card px-3 py-2"
                                 >
-                                  {/* Label - Fixed width column */}
-                                  <div className="flex w-[160px] shrink-0 items-center gap-1">
+                                  {/* Label - Column */}
+                                  <div className="flex min-w-[140px] flex-1 items-center gap-1">
                                     <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
                                     {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "label" ? (
                                       <Input
@@ -258,9 +258,9 @@ export function ProductTableV2({
                                   <div className="h-4 w-px bg-border" />
 
                                   {/* All fields in table-like columns */}
-                                  <div className="flex flex-1 items-center gap-3 overflow-x-auto">
-                                        {/* Réduction: Type + Valeur - Column width */}
-                                        <div className="flex w-[130px] shrink-0 items-center gap-1.5">
+                                  <div className="flex flex-[3] items-center gap-3 overflow-x-auto">
+                                        {/* Réduction: Type + Valeur - Column */}
+                                        <div className="flex min-w-[130px] flex-1 items-center gap-1.5">
                                           <span className="w-[30px] text-xs text-muted-foreground">Réd:</span>
                                           <Select
                                             value={config.promotionType || ""}
@@ -354,8 +354,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Prix après promo - Column */}
-                                        <div className="flex w-[170px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Prix après Promo:</span>
+                                        <div className="flex min-w-[170px] flex-1 items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Prix après Promo:</span>
                                           {config.promotionType === "free" ? (
                                             <span className="text-xs font-medium text-muted-foreground">Gratuit</span>
                                           ) : (
@@ -412,8 +412,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Quantité minimale - Column */}
-                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Qmin:</span>
+                                        <div className="flex min-w-[70px] flex-[0.5] items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Qmin:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "minQuantity" ? (
                                             <Input
                                               type="number"
@@ -439,8 +439,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* MOQ - Column */}
-                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">MOQ:</span>
+                                        <div className="flex min-w-[70px] flex-[0.5] items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">MOQ:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "moq" ? (
                                             <Input
                                               type="number"
@@ -466,8 +466,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* SOM - Column */}
-                                        <div className="flex w-[70px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">SOM:</span>
+                                        <div className="flex min-w-[70px] flex-[0.5] items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">SOM:</span>
                                           {editingField?.productId === product.id && editingField?.configId === config.id && editingField?.field === "som" ? (
                                             <Input
                                               type="number"
@@ -493,8 +493,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Date début - Column */}
-                                        <div className="flex w-[130px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Début:</span>
+                                        <div className="flex min-w-[130px] flex-1 items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Début:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
                                               <Button variant="outline" className="h-6 flex-1 justify-start text-xs font-normal bg-transparent">
@@ -520,8 +520,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Date fin - Column */}
-                                        <div className="flex w-[110px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Fin:</span>
+                                        <div className="flex min-w-[110px] flex-1 items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Fin:</span>
                                           <Popover>
                                             <PopoverTrigger asChild>
                                               <Button variant="outline" className="h-6 flex-1 justify-start text-xs font-normal bg-transparent">
@@ -547,8 +547,8 @@ export function ProductTableV2({
                                         </div>
 
                                         {/* Gamme - Column */}
-                                        <div className="flex w-[90px] shrink-0 items-center gap-1.5">
-                                          <span className="text-xs text-muted-foreground">Gamme:</span>
+                                        <div className="flex min-w-[90px] flex-[0.6] items-center gap-1.5">
+                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Gamme:</span>
                                           <Select
                                             value={config.gamme}
                                             onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { gamme: v as "M" | "D" })}
