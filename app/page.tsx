@@ -725,17 +725,6 @@ export default function ProductManagement() {
     setHasUnsavedChanges(false)
     setTableResetKey((prev) => prev + 1)
   }
-    setActivePromoBook(null)
-    setPromoBookProductIds(new Set())
-    setHasUnsavedChanges(false)
-    setTableResetKey((prev) => prev + 1)
-  }
-    setActivePromoBook(null)
-    // Reset products to initial state
-    setProducts(MOCK_PRODUCTS)
-    // Increment reset key to clear filters/sorts
-    setTableResetKey((prev) => prev + 1)
-  }
 
   const handleCreatePromoBook = (name: string, description: string) => {
     const modifiedProducts: PromoBookProduct[] = products
