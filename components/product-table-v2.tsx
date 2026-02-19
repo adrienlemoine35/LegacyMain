@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -37,6 +38,17 @@ export function ProductTableV2({
   const [showOnlyWithPromo, setShowOnlyWithPromo] = useState(false)
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
+  const [bulkPromoData, setBulkPromoData] = useState<Partial<PromoConfig>>({
+    label: "",
+    promotionType: null,
+    promotionValue: null,
+    minQuantity: null,
+    moq: null,
+    som: null,
+    startDate: null,
+    endDate: null,
+  })
   const { toast } = useToast()
 
   const toggleExpanded = (productId: string) => {
@@ -139,6 +151,12 @@ export function ProductTableV2({
           />
           <span className="text-sm font-medium">Produits avec promotion</span>
         </div>
+        {selectedProducts.size > 0 && (
+          <Button onClick={() => setBulkDialogOpen(true)} className="whitespace-nowrap">
+            <Plus className="mr-2 size-4" />
+            Ajouter promotion ({selectedProducts.size})
+          </Button>
+        )}
       </div>
 
       {/* Table Section - Horizontal Scroll Only */}
@@ -621,6 +639,199 @@ export function ProductTableV2({
           </table>
         </div>
       </div>
+
+      {/* Bulk Action Dialog */}
+      <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Ajouter une promotion en masse</DialogTitle>
+            <DialogDescription>
+              Créer une nouvelle ligne de promoparamétrage pour {selectedProducts.size} produit(s) sélectionné(s)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            {/* Label */}
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Nom de la promotion</label>
+              <Input
+                value={bulkPromoData.label || ""}
+                onChange={(e) => setBulkPromoData({ ...bulkPromoData, label: e.target.value })}
+                placeholder="ex: Black Friday 2024"
+              />
+            </div>
+
+            {/* Promotion Type and Value */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Type de réduction</label>
+                <Select
+                  value={bulkPromoData.promotionType || ""}
+                  onValueChange={(v) => setBulkPromoData({ ...bulkPromoData, promotionType: v as PromotionType })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="absolute">Montant fixe (€)</SelectItem>
+                    <SelectItem value="percentage">Pourcentage (%)</SelectItem>
+                    <SelectItem value="free">Gratuit</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Valeur</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={bulkPromoData.promotionValue || ""}
+                  onChange={(e) => setBulkPromoData({ ...bulkPromoData, promotionValue: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="0"
+                  disabled={bulkPromoData.promotionType === "free"}
+                />
+              </div>
+            </div>
+
+            {/* MOQ, SOM, Min Quantity */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">MOQ</label>
+                <Input
+                  type="number"
+                  value={bulkPromoData.moq || ""}
+                  onChange={(e) => setBulkPromoData({ ...bulkPromoData, moq: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">SOM</label>
+                <Input
+                  type="number"
+                  value={bulkPromoData.som || ""}
+                  onChange={(e) => setBulkPromoData({ ...bulkPromoData, som: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Qté Min</label>
+                <Input
+                  type="number"
+                  value={bulkPromoData.minQuantity || ""}
+                  onChange={(e) => setBulkPromoData({ ...bulkPromoData, minQuantity: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Date de début</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 size-4" />
+                      {bulkPromoData.startDate ? format(new Date(bulkPromoData.startDate), "dd/MM/yyyy") : "Sélectionner"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={bulkPromoData.startDate ? new Date(bulkPromoData.startDate) : undefined}
+                      onSelect={(date) => setBulkPromoData({ ...bulkPromoData, startDate: date ? format(date, "yyyy-MM-dd") : null })}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Date de fin</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 size-4" />
+                      {bulkPromoData.endDate ? format(new Date(bulkPromoData.endDate), "dd/MM/yyyy") : "Sélectionner"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={bulkPromoData.endDate ? new Date(bulkPromoData.endDate) : undefined}
+                      onSelect={(date) => setBulkPromoData({ ...bulkPromoData, endDate: date ? format(date, "yyyy-MM-dd") : null })}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => {
+                // Create promo config for all selected products
+                const selectedProductIds = Array.from(selectedProducts)
+                selectedProductIds.forEach((productId) => {
+                  const product = products.find((p) => p.id === productId)
+                  if (!product) return
+
+                  const newConfig: PromoConfig = {
+                    id: `pc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    currentPrice: bulkPromoData.promotionType === "free" ? 0 : null,
+                    promotionType: bulkPromoData.promotionType || null,
+                    promotionValue: bulkPromoData.promotionValue || null,
+                    minQuantity: bulkPromoData.minQuantity || null,
+                    moq: bulkPromoData.moq || null,
+                    som: bulkPromoData.som || null,
+                    startDate: bulkPromoData.startDate || null,
+                    endDate: bulkPromoData.endDate || null,
+                    label: bulkPromoData.label || "Nouvelle promo",
+                  }
+
+                  // Calculate current price if needed
+                  if (bulkPromoData.promotionType && bulkPromoData.promotionValue && product.initialPrice) {
+                    if (bulkPromoData.promotionType === "absolute") {
+                      newConfig.currentPrice = product.initialPrice - bulkPromoData.promotionValue
+                    } else if (bulkPromoData.promotionType === "percentage") {
+                      newConfig.currentPrice = product.initialPrice * (1 - bulkPromoData.promotionValue / 100)
+                    }
+                  }
+
+                  onAddPromoConfig(productId, newConfig)
+                })
+
+                toast({
+                  title: "Promotions créées",
+                  description: `${selectedProductIds.length} promotion(s) ajoutée(s) avec succès`,
+                })
+
+                // Reset form and close dialog
+                setBulkPromoData({
+                  label: "",
+                  promotionType: null,
+                  promotionValue: null,
+                  minQuantity: null,
+                  moq: null,
+                  som: null,
+                  startDate: null,
+                  endDate: null,
+                })
+                setBulkDialogOpen(false)
+              }}
+              disabled={!bulkPromoData.label || !bulkPromoData.promotionType}
+            >
+              Créer les promotions
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
