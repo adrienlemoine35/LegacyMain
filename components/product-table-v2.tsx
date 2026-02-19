@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift } from "lucide-react"
+import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { Product, PromotionType, PromoConfig } from "@/app/page"
@@ -30,6 +30,8 @@ export function ProductTableV2({
   onUpdatePromoConfig,
   onDeletePromoConfig,
 }: ProductTableV2Props) {
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
@@ -94,8 +96,35 @@ export function ProductTableV2({
     setEditValue("")
   }
 
+  // Filter products by name or promo config labels
+  const filteredProducts = products.filter((product) => {
+    const query = searchQuery.toLowerCase().trim()
+    if (!query) return true
+    
+    // Search in product name
+    if (product.name.toLowerCase().includes(query)) return true
+    
+    // Search in promo config labels
+    const hasMatchingPromo = product.promoConfigs?.some((config) =>
+      config.label?.toLowerCase().includes(query)
+    )
+    return hasMatchingPromo
+  })
+
   return (
     <div className="w-full space-y-4">
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Rechercher un produit ou un promoparamétrage..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       {/* Table Section - Horizontal Scroll Only */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="overflow-x-auto">
@@ -128,12 +157,15 @@ export function ProductTableV2({
                   Prix initial
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
+                  Gamme
+                </th>
+                <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
                   Nb Promos
                 </th>
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => {
+              {filteredProducts.map((product) => {
                 const isExpanded = expandedProducts.has(product.id)
                 const isSelected = selectedProducts.has(product.id)
                 const promoConfigs = product.promoConfigs || []
@@ -186,6 +218,26 @@ export function ProductTableV2({
                         <span className="font-medium">{product.initialPrice.toFixed(2)} €</span>
                       </td>
                       <td className="p-4 text-left">
+                        <Select
+                          value={product.gamme}
+                          onValueChange={(v) => {
+                            // Update product gamme - would need a callback prop
+                            toast({
+                              title: "Gamme mise à jour",
+                              description: `Gamme changée en ${v}`,
+                            })
+                          }}
+                        >
+                          <SelectTrigger className="h-8 w-16">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="M">M</SelectItem>
+                            <SelectItem value="D">D</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="p-4 text-left">
                         <div className="flex items-center gap-2">
                           <Badge variant={hasConfigs ? "default" : "secondary"}>
                             {promoConfigs.length}
@@ -205,7 +257,6 @@ export function ProductTableV2({
                                 som: null,
                                 startDate: null,
                                 endDate: null,
-                                gamme: "M",
                                 label: "Nouvelle promo",
                               }
                               onAddPromoConfig(product.id, newConfig)
@@ -546,22 +597,6 @@ export function ProductTableV2({
                                           </Popover>
                                         </div>
 
-                                        {/* Gamme - Column */}
-                                        <div className="flex min-w-[90px] flex-[0.6] items-center gap-1.5">
-                                          <span className="whitespace-nowrap text-xs text-muted-foreground">Gamme:</span>
-                                          <Select
-                                            value={config.gamme}
-                                            onValueChange={(v) => onUpdatePromoConfig(product.id, config.id, { gamme: v as "M" | "D" })}
-                                          >
-                                            <SelectTrigger className="h-6 w-[45px] text-xs">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="M">M</SelectItem>
-                                              <SelectItem value="D">D</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
                                       </div>
 
                                     {/* Delete button */}

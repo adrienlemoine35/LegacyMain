@@ -29,7 +29,6 @@ export interface PromoConfig {
   som: number | null // Standard Order Multiple
   startDate: string | null
   endDate: string | null
-  gamme: "M" | "D"
   label?: string // Optional label like "Promo Été", "Black Friday", etc.
 }
 
@@ -43,6 +42,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 149.99,
     stock: 45,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [
       {
         id: "pc1",
@@ -54,7 +54,6 @@ const MOCK_PRODUCTS = [
         som: 5,
         startDate: "2024-06-01",
         endDate: "2024-08-31",
-        gamme: "M" as "M" | "D",
         label: "Promo Été 2024",
       },
       {
@@ -67,7 +66,6 @@ const MOCK_PRODUCTS = [
         som: 10,
         startDate: "2024-09-01",
         endDate: "2024-09-30",
-        gamme: "M" as "M" | "D",
         label: "Achat en volume",
       },
     ],
@@ -80,20 +78,32 @@ const MOCK_PRODUCTS = [
     initialPrice: 299.99,
     stock: 12,
     status: "draft",
+    gamme: "D" as "M" | "D",
     promoConfigs: [
       {
         id: "pc3",
         currentPrice: 269.99,
-        promotionType: "absolute" as PromotionType,
-        promotionValue: 30,
-        minQuantity: null,
-        moq: 5,
-        som: 1,
-        startDate: "2024-06-01",
-        endDate: "2024-08-31",
-        gamme: "D" as "M" | "D",
-        label: "Promo Été 2024",
+        promotionType: "percentage" as PromotionType,
+        promotionValue: 10,
+        minQuantity: 3,
+        moq: 15,
+        som: 3,
+        startDate: "2024-11-25",
+        endDate: "2024-11-29",
+        label: "Black Friday",
       },
+    ],
+  },
+  {
+    id: "P003",
+    name: "Scie circulaire pro",
+    category: "Outillage électrique",
+    supplier: "DeWalt",
+    initialPrice: 299.99,
+    stock: 15,
+    status: "draft",
+    gamme: "D" as "M" | "D",
+    promoConfigs: [
       {
         id: "pc4",
         currentPrice: 239.99,
@@ -104,7 +114,6 @@ const MOCK_PRODUCTS = [
         som: 3,
         startDate: "2024-11-25",
         endDate: "2024-11-29",
-        gamme: "D" as "M" | "D",
         label: "Black Friday",
       },
       {
@@ -117,7 +126,6 @@ const MOCK_PRODUCTS = [
         som: 10,
         startDate: "2024-01-01",
         endDate: "2024-12-31",
-        gamme: "D" as "M" | "D",
         label: "Pro - Volume",
       },
     ],
@@ -130,6 +138,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 45.99,
     stock: 89,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [
       {
         id: "pc6",
@@ -141,7 +150,6 @@ const MOCK_PRODUCTS = [
         som: 6,
         startDate: "2024-03-01",
         endDate: "2024-03-31",
-        gamme: "M" as "M" | "D",
         label: "Printemps 2024",
       },
       {
@@ -154,7 +162,6 @@ const MOCK_PRODUCTS = [
         som: 12,
         startDate: "2024-01-01",
         endDate: "2024-12-31",
-        gamme: "M" as "M" | "D",
         label: "Pro - Volume annuel",
       },
       {
@@ -167,7 +174,6 @@ const MOCK_PRODUCTS = [
         som: 2,
         startDate: "2024-11-25",
         endDate: "2024-11-29",
-        gamme: "D" as "M" | "D",
         label: "Black Friday",
       },
     ],
@@ -180,6 +186,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 79.99,
     stock: 67,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -190,6 +197,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 119.99,
     stock: 34,
     status: "draft",
+    gamme: "D" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -200,6 +208,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 89.99,
     stock: 52,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -210,6 +219,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 109.99,
     stock: 41,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -220,6 +230,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 249.99,
     stock: 19,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -230,6 +241,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 45.99,
     stock: 156,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -240,6 +252,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 12.99,
     stock: 234,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -250,6 +263,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 24.99,
     stock: 189,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -260,6 +274,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 8.99,
     stock: 342,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -270,6 +285,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 15.99,
     stock: 98,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -280,6 +296,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 22.99,
     stock: 145,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -290,6 +307,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 18.99,
     stock: 76,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -300,6 +318,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 9.99,
     stock: 267,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -310,6 +329,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 16.99,
     stock: 112,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -320,6 +340,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 1.99,
     stock: 1850,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -330,6 +351,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 1.49,
     stock: 2340,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -340,6 +362,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 14.99,
     stock: 287,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -350,6 +373,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 9.99,
     stock: 456,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -360,6 +384,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 12.99,
     stock: 890,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -370,6 +395,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 5.99,
     stock: 1230,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -380,6 +406,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 8.99,
     stock: 678,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -390,6 +417,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 19.99,
     stock: 234,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -400,6 +428,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 7.99,
     stock: 567,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -410,6 +439,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 4.99,
     stock: 789,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -420,6 +450,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 29.99,
     stock: 345,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -430,6 +461,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 15.99,
     stock: 456,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
   {
@@ -440,6 +472,7 @@ const MOCK_PRODUCTS = [
     initialPrice: 69.99,
     stock: 87,
     status: "draft",
+    gamme: "M" as "M" | "D",
     promoConfigs: [],
   },
 ]
