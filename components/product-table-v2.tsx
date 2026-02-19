@@ -32,10 +32,9 @@ export function ProductTableV2({
 }: ProductTableV2Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
-  const { toast } = useToast()
-  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
   const [editValue, setEditValue] = useState("")
+  const { toast } = useToast()
 
   const toggleExpanded = (productId: string) => {
     setExpandedProducts((prev) => {
