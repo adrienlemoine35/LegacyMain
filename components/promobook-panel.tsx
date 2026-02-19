@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -28,6 +35,9 @@ import {
   User,
   Package,
   MoreHorizontal,
+  Share2,
+  Trash2,
+  UserPlus,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -36,17 +46,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+export interface PromoBookSharedUser {
+  email: string
+  role: "viewer" | "editor"
+  addedAt: string
+}
+
 export interface PromoBook {
   id: string
   name: string
   description?: string
   createdAt: string
   owner: string
+  ownerEmail: string
   productCount: number
   tags: string[]
   products: PromoBookProduct[]
   filters: PromoBookFilters
   sorts: PromoBookSort[]
+  sharedWith: PromoBookSharedUser[]
 }
 
 export interface PromoBookProduct {
@@ -96,8 +114,21 @@ const MOCK_PROMOBOOKS: PromoBook[] = [
     description: "Réductions sur l'outillage électrique Bosch et Makita",
     createdAt: "2024-01-15",
     owner: "Jean Dupont",
+    ownerEmail: "jean.dupont@example.com",
     productCount: 5,
     tags: ["Outillage électrique", "Bosch", "Makita"],
+    sharedWith: [
+      {
+        email: "marie.martin@example.com",
+        role: "editor",
+        addedAt: "2024-01-20",
+      },
+      {
+        email: "paul.bernard@example.com",
+        role: "viewer",
+        addedAt: "2024-01-22",
+      },
+    ],
     products: [
       {
         productId: "P001",
@@ -178,8 +209,10 @@ const MOCK_PROMOBOOKS: PromoBook[] = [
     description: "Offres spéciales sur toute la gamme peinture",
     createdAt: "2024-01-10",
     owner: "Marie Martin",
+    ownerEmail: "marie.martin@example.com",
     productCount: 4,
     tags: ["Peinture"],
+    sharedWith: [],
     products: [
       {
         productId: "P009",
@@ -256,6 +289,10 @@ export function PromoBookPanel({
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newPromoBookName, setNewPromoBookName] = useState("")
   const [newPromoBookDescription, setNewPromoBookDescription] = useState("")
+  const [showShareDialog, setShowShareDialog] = useState(false)
+  const [sharePromoBook, setSharePromoBook] = useState<PromoBook | null>(null)
+  const [newUserEmail, setNewUserEmail] = useState("")
+  const [newUserRole, setNewUserRole] = useState<"viewer" | "editor">("viewer")
 
   const allPromoBooks = [...MOCK_PROMOBOOKS, ...promoBooks]
 
@@ -280,6 +317,60 @@ export function PromoBookPanel({
       day: "numeric",
       month: "short",
       year: "numeric",
+    })
+  }
+
+  const handleShareClick = (promoBook: PromoBook, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSharePromoBook(promoBook)
+    setShowShareDialog(true)
+  }
+
+  const handleAddUser = () => {
+    if (!sharePromoBook || !newUserEmail.trim()) return
+    
+    // Check if user already has access
+    if (sharePromoBook.sharedWith.some((u) => u.email === newUserEmail)) {
+      alert("Cet utilisateur a déjà accès à ce PromoBook")
+      return
+    }
+
+    // Add new user (in real app, this would be an API call)
+    const updatedSharedWith = [
+      ...sharePromoBook.sharedWith,
+      {
+        email: newUserEmail,
+        role: newUserRole,
+        addedAt: new Date().toISOString(),
+      },
+    ]
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: updatedSharedWith,
+    })
+
+    setNewUserEmail("")
+    setNewUserRole("viewer")
+  }
+
+  const handleRemoveUser = (email: string) => {
+    if (!sharePromoBook) return
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: sharePromoBook.sharedWith.filter((u) => u.email !== email),
+    })
+  }
+
+  const handleChangeUserRole = (email: string, newRole: "viewer" | "editor") => {
+    if (!sharePromoBook) return
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: sharePromoBook.sharedWith.map((u) =>
+        u.email === email ? { ...u, role: newRole } : u
+      ),
     })
   }
 
@@ -367,10 +458,15 @@ export function PromoBookPanel({
                       <DropdownMenuItem onClick={() => onActivatePromoBook(promoBook)}>
                         Ouvrir
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleShareClick(promoBook, e)}>
+                        <Share2 className="mr-2 size-4" />
+                        Partager
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDeletePromoBook(promoBook.id)}
                         className="text-destructive"
                       >
+                        <Trash2 className="mr-2 size-4" />
                         Supprimer
                       </DropdownMenuItem>
                     </DropdownMenuContent>
