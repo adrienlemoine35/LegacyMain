@@ -3,11 +3,13 @@
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -130,13 +132,13 @@ export function ProductTableV2({
             className="pl-10"
           />
         </div>
-        <Button
-          variant={showOnlyWithPromo ? "default" : "outline"}
-          onClick={() => setShowOnlyWithPromo(!showOnlyWithPromo)}
-          className="whitespace-nowrap"
-        >
-          Produits avec promotion
-        </Button>
+        <div className="flex items-center gap-2 whitespace-nowrap rounded-md border border-border bg-white px-3 py-2">
+          <Switch
+            checked={showOnlyWithPromo}
+            onCheckedChange={setShowOnlyWithPromo}
+          />
+          <span className="text-sm font-medium">Produits avec promotion</span>
+        </div>
       </div>
 
       {/* Table Section - Horizontal Scroll Only */}
@@ -269,7 +271,7 @@ export function ProductTableV2({
                     {/* Expanded Promo Configs */}
                     {isExpanded && hasConfigs && (
                       <tr>
-                        <td colSpan={9} className="bg-muted/20 p-0">
+                        <td colSpan={10} className="bg-muted/20 p-0">
                           <div className="p-4">
                             <div className="space-y-3">
                               {promoConfigs.map((config, index) => (
