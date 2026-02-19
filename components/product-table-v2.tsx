@@ -434,7 +434,9 @@ export function ProductTableV2({
                       </td>
                       <td className="p-4 text-left">
                         <div className="flex items-center gap-2">
-                          <Badge variant={hasConfigs ? "default" : "secondary"}>
+                          <Badge 
+                            className={hasConfigs ? "bg-blue-600 text-white hover:bg-blue-600" : "bg-blue-100 text-blue-700 hover:bg-blue-100"}
+                          >
                             {promoConfigs.length}
                           </Badge>
                           <Button
@@ -467,7 +469,7 @@ export function ProductTableV2({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className={`h-7 w-7 p-0 hover:bg-muted ${promoBookProductIds.has(product.id) ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+                            className={`h-7 w-7 p-0 hover:bg-muted hover:text-foreground ${promoBookProductIds.has(product.id) ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}`}
                             onClick={() => {
                               if (promoBookProductIds.has(product.id)) {
                                 onRemoveFromPromoBook(product.id)
