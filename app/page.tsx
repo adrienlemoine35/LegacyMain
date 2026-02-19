@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ProductTable } from "@/components/product-table"
 import { ProductTableV2 } from "@/components/product-table-v2"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -17,6 +17,9 @@ import {
 
 // Types
 export type PromotionType = "absolute" | "percentage" | "free" | null
+
+// Re-export PromoBook for other components
+export type { PromoBook }
 
 export type { PromoConfig }
 export interface PromoConfig {
@@ -490,11 +493,26 @@ export default function ProductManagement() {
   const [activePromoBook, setActivePromoBook] = useState<PromoBook | null>(null)
   const [userPromoBooks, setUserPromoBooks] = useState<PromoBook[]>([])
   const [tableResetKey, setTableResetKey] = useState(0)
+  const [promoBookProductIds, setPromoBookProductIds] = useState<Set<string>>(new Set())
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   // Count modified products (products with any promotion applied)
   const modifiedProductsCount = products.filter(
     (p) => p.currentPrice !== null || p.promotionType !== null
   ).length
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && activePromoBook) {
+        e.preventDefault()
+        e.returnValue = ""
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [hasUnsavedChanges, activePromoBook])
 
   const handlePriceChange = (productId: string, newPrice: number) => {
     setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, currentPrice: newPrice } : p)))
@@ -607,6 +625,56 @@ export default function ProductManagement() {
   }
 
   // PromoBook handlers
+  const handleAddToPromoBook = (productId: string) => {
+    setPromoBookProductIds((prev) => {
+      const newSet = new Set(prev)
+      newSet.add(productId)
+      return newSet
+    })
+    setHasUnsavedChanges(true)
+  }
+
+  const handleRemoveFromPromoBook = (productId: string) => {
+    setPromoBookProductIds((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(productId)
+      return newSet
+    })
+    setHasUnsavedChanges(true)
+  }
+
+  const handleSavePromoBook = () => {
+    if (!activePromoBook) return
+    
+    // Save logic here - for now just mark as saved
+    setHasUnsavedChanges(false)
+    
+    // Update the active promobook with current products
+    const updatedPromoBook = {
+      ...activePromoBook,
+      products: Array.from(promoBookProductIds).map((productId) => {
+        const product = products.find((p) => p.id === productId)
+        return {
+          productId,
+          currentPrice: product?.currentPrice || null,
+          promotionType: product?.promotionType || null,
+          promotionValue: product?.promotionValue || null,
+          minQuantity: product?.minQuantity || null,
+          startDate: product?.startDate || null,
+          endDate: product?.endDate || null,
+          gamme: product?.gamme || "M",
+        }
+      }),
+      productCount: promoBookProductIds.size,
+    }
+    
+    // Update in userPromoBooks if it exists there
+    setUserPromoBooks((prev) =>
+      prev.map((pb) => (pb.id === activePromoBook.id ? updatedPromoBook : pb))
+    )
+    setActivePromoBook(updatedPromoBook)
+  }
+
   const handleActivatePromoBook = (promoBook: PromoBook) => {
     console.log("[v0] Activating PromoBook:", promoBook.name)
     console.log("[v0] Products to restore:", promoBook.products.length)
@@ -614,6 +682,8 @@ export default function ProductManagement() {
     console.log("[v0] Sorts:", promoBook.sorts)
     
     setActivePromoBook(promoBook)
+    setPromoBookProductIds(new Set(promoBook.products.map((p) => p.productId)))
+    setHasUnsavedChanges(false)
     
     // Restore products state from the PromoBook
     if (promoBook.products.length > 0) {
@@ -644,29 +714,22 @@ export default function ProductManagement() {
   }
 
   const handleClosePromoBook = () => {
-    // Save current state to the PromoBook before closing
-    if (activePromoBook) {
-      const modifiedProducts: PromoBookProduct[] = products
-        .filter((p) => p.currentPrice !== null || p.promotionType !== null)
-        .map((p) => ({
-          productId: p.id,
-          currentPrice: p.currentPrice,
-          promotionType: p.promotionType,
-          promotionValue: p.promotionValue,
-          minQuantity: p.minQuantity,
-          startDate: p.startDate,
-          endDate: p.endDate,
-          gamme: p.gamme,
-        }))
-
-      setUserPromoBooks((prev) =>
-        prev.map((pb) =>
-          pb.id === activePromoBook.id
-            ? { ...pb, products: modifiedProducts, productCount: modifiedProducts.length }
-            : pb
-        )
+    if (hasUnsavedChanges) {
+      const confirmClose = window.confirm(
+        "Vous avez des modifications non sauvegardées. Voulez-vous vraiment fermer le PromoBook ?"
       )
+      if (!confirmClose) return
     }
+    setActivePromoBook(null)
+    setPromoBookProductIds(new Set())
+    setHasUnsavedChanges(false)
+    setTableResetKey((prev) => prev + 1)
+  }
+    setActivePromoBook(null)
+    setPromoBookProductIds(new Set())
+    setHasUnsavedChanges(false)
+    setTableResetKey((prev) => prev + 1)
+  }
     setActivePromoBook(null)
     // Reset products to initial state
     setProducts(MOCK_PRODUCTS)
@@ -817,6 +880,12 @@ export default function ProductManagement() {
             onAddPromoConfig={handleAddPromoConfig}
             onUpdatePromoConfig={handleUpdatePromoConfig}
             onDeletePromoConfig={handleDeletePromoConfig}
+            activePromoBook={activePromoBook}
+            promoBookProductIds={promoBookProductIds}
+            onAddToPromoBook={handleAddToPromoBook}
+            onRemoveFromPromoBook={handleRemoveFromPromoBook}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onSavePromoBook={handleSavePromoBook}
           />
         </div>
       </div>

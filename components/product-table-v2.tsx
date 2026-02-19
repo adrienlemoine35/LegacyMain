@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search, Filter } from "lucide-react"
+import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search, Filter, BookOpen } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
-import type { Product, PromotionType, PromoConfig } from "@/app/page"
+import type { Product, PromotionType, PromoConfig, PromoBook } from "@/app/page"
 
 type ColumnFilters = {
   reference: Set<string>
@@ -31,6 +31,12 @@ interface ProductTableV2Props {
   onAddPromoConfig: (productId: string, config: PromoConfig) => void
   onUpdatePromoConfig: (productId: string, configId: string, config: Partial<PromoConfig>) => void
   onDeletePromoConfig: (productId: string, configId: string) => void
+  activePromoBook: PromoBook | null
+  promoBookProductIds: Set<string>
+  onAddToPromoBook: (productId: string) => void
+  onRemoveFromPromoBook: (productId: string) => void
+  hasUnsavedChanges: boolean
+  onSavePromoBook: () => void
 }
 
 export function ProductTableV2({
@@ -40,10 +46,17 @@ export function ProductTableV2({
   onAddPromoConfig,
   onUpdatePromoConfig,
   onDeletePromoConfig,
+  activePromoBook,
+  promoBookProductIds,
+  onAddToPromoBook,
+  onRemoveFromPromoBook,
+  hasUnsavedChanges,
+  onSavePromoBook,
 }: ProductTableV2Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
   const [showOnlyWithPromo, setShowOnlyWithPromo] = useState(false)
+  const [showPromoBookOnly, setShowPromoBookOnly] = useState(false)
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
     reference: new Set(),
     name: new Set(),
@@ -241,6 +254,11 @@ export function ProductTableV2({
       return false
     }
 
+    // Filter by PromoBook
+    if (showPromoBookOnly && activePromoBook && !promoBookProductIds.has(product.id)) {
+      return false
+    }
+
     // Column filters
     if (columnFilters.reference.size > 0 && !columnFilters.reference.has(product.id)) return false
     if (columnFilters.name.size > 0 && !columnFilters.name.has(product.name)) return false
@@ -282,10 +300,32 @@ export function ProductTableV2({
           />
           <span className="text-sm font-medium">Produits avec promotion</span>
         </div>
+        {activePromoBook && (
+          <div className="flex items-center gap-2 whitespace-nowrap rounded-md border border-border bg-white px-3 py-2">
+            <Switch
+              checked={showPromoBookOnly}
+              onCheckedChange={setShowPromoBookOnly}
+            />
+            <span className="text-sm font-medium">PromoBook uniquement</span>
+          </div>
+        )}
         {selectedProducts.size > 0 && (
           <Button onClick={() => setBulkDialogOpen(true)} className="whitespace-nowrap">
             <Plus className="mr-2 size-4" />
             Ajouter promotion ({selectedProducts.size})
+          </Button>
+        )}
+        {activePromoBook && (
+          <Button
+            onClick={onSavePromoBook}
+            disabled={!hasUnsavedChanges}
+            className="whitespace-nowrap"
+            variant={hasUnsavedChanges ? "default" : "outline"}
+          >
+            Valider les modifications
+            {hasUnsavedChanges && (
+              <Badge variant="destructive" className="ml-2 size-2 rounded-full p-0" />
+            )}
           </Button>
         )}
       </div>
@@ -405,29 +445,48 @@ export function ProductTableV2({
                           <Badge variant={hasConfigs ? "default" : "secondary"}>
                             {promoConfigs.length}
                           </Badge>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0"
-                            onClick={() => {
-                              const newConfig: PromoConfig = {
-                                id: `pc-${Date.now()}`,
-                                currentPrice: null,
-                                promotionType: null,
-                                promotionValue: null,
-                                minQuantity: null,
-                                moq: null,
-                                som: null,
-                                startDate: null,
-                                endDate: null,
-                                label: "Nouvelle promo",
-                              }
-                              onAddPromoConfig(product.id, newConfig)
-                              setExpandedProducts((prev) => new Set(prev).add(product.id))
-                            }}
-                          >
-                            <Plus className="size-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0"
+                              onClick={() => {
+                                const newConfig: PromoConfig = {
+                                  id: `pc-${Date.now()}`,
+                                  currentPrice: null,
+                                  promotionType: null,
+                                  promotionValue: null,
+                                  minQuantity: null,
+                                  moq: null,
+                                  som: null,
+                                  startDate: null,
+                                  endDate: null,
+                                  label: "Nouvelle promo",
+                                }
+                                onAddPromoConfig(product.id, newConfig)
+                                setExpandedProducts((prev) => new Set(prev).add(product.id))
+                              }}
+                            >
+                              <Plus className="size-4" />
+                            </Button>
+                            {activePromoBook && (
+                              <Button
+                                size="sm"
+                                variant={promoBookProductIds.has(product.id) ? "default" : "ghost"}
+                                className="h-7 w-7 p-0"
+                                onClick={() => {
+                                  if (promoBookProductIds.has(product.id)) {
+                                    onRemoveFromPromoBook(product.id)
+                                  } else {
+                                    onAddToPromoBook(product.id)
+                                  }
+                                }}
+                                title={promoBookProductIds.has(product.id) ? "Retirer du PromoBook" : "Ajouter au PromoBook"}
+                              >
+                                <BookOpen className="size-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
