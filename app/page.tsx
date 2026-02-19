@@ -817,6 +817,11 @@ export default function ProductManagement() {
             onAddPromoConfig={handleAddPromoConfig}
             onUpdatePromoConfig={handleUpdatePromoConfig}
             onDeletePromoConfig={handleDeletePromoConfig}
+            onUpdateProduct={(productId, updates) => {
+              setProducts((prev) =>
+                prev.map((p) => (p.id === productId ? { ...p, ...updates } : p)),
+              )
+            }}
           />
         </div>
       </div>

@@ -20,6 +20,7 @@ interface ProductTableV2Props {
   onAddPromoConfig: (productId: string, config: PromoConfig) => void
   onUpdatePromoConfig: (productId: string, configId: string, config: Partial<PromoConfig>) => void
   onDeletePromoConfig: (productId: string, configId: string) => void
+  onUpdateProduct: (productId: string, updates: Partial<Product>) => void
 }
 
 export function ProductTableV2({
@@ -29,6 +30,7 @@ export function ProductTableV2({
   onAddPromoConfig,
   onUpdatePromoConfig,
   onDeletePromoConfig,
+  onUpdateProduct,
 }: ProductTableV2Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
@@ -220,11 +222,7 @@ export function ProductTableV2({
                         <Select
                           value={product.gamme}
                           onValueChange={(v) => {
-                            // Update product gamme - would need a callback prop
-                            toast({
-                              title: "Gamme mise à jour",
-                              description: `Gamme changée en ${v}`,
-                            })
+                            onUpdateProduct(product.id, { gamme: v as "M" | "D" })
                           }}
                         >
                           <SelectTrigger className="h-8 w-16">
