@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -640,17 +640,17 @@ export function ProductTableV2({
         </div>
       </div>
 
-      {/* Bulk Action Dialog */}
-      <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Ajouter une promotion en masse</DialogTitle>
-            <DialogDescription>
+      {/* Bulk Action Sheet */}
+      <Sheet open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>Ajouter une promotion en masse</SheetTitle>
+            <SheetDescription>
               Créer une nouvelle ligne de promoparamétrage pour {selectedProducts.size} produit(s) sélectionné(s)
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 overflow-y-auto py-4">
             {/* Label */}
             <div className="grid gap-2">
               <label className="text-sm font-medium">Nom de la promotion</label>
@@ -770,11 +770,12 @@ export function ProductTableV2({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+          <SheetFooter className="flex-row gap-2">
+            <Button variant="outline" onClick={() => setBulkDialogOpen(false)} className="flex-1">
               Annuler
             </Button>
             <Button
+              className="flex-1"
               onClick={() => {
                 // Create promo config for all selected products
                 const selectedProductIds = Array.from(selectedProducts)
@@ -829,9 +830,9 @@ export function ProductTableV2({
             >
               Créer les promotions
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
