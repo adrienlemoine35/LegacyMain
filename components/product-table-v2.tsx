@@ -315,19 +315,6 @@ export function ProductTableV2({
             Ajouter promotion ({selectedProducts.size})
           </Button>
         )}
-        {activePromoBook && (
-          <Button
-            onClick={onSavePromoBook}
-            disabled={!hasUnsavedChanges}
-            className="whitespace-nowrap"
-            variant={hasUnsavedChanges ? "default" : "outline"}
-          >
-            Valider les modifications
-            {hasUnsavedChanges && (
-              <Badge variant="destructive" className="ml-2 size-2 rounded-full p-0" />
-            )}
-          </Button>
-        )}
       </div>
 
       {/* Table Section - Horizontal Scroll Only */}
@@ -382,6 +369,11 @@ export function ProductTableV2({
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
                   Nb Promos
                 </th>
+                {activePromoBook && (
+                  <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
+                    Au PromoBook
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -445,56 +437,56 @@ export function ProductTableV2({
                           <Badge variant={hasConfigs ? "default" : "secondary"}>
                             {promoConfigs.length}
                           </Badge>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0"
-                              onClick={() => {
-                                const newConfig: PromoConfig = {
-                                  id: `pc-${Date.now()}`,
-                                  currentPrice: null,
-                                  promotionType: null,
-                                  promotionValue: null,
-                                  minQuantity: null,
-                                  moq: null,
-                                  som: null,
-                                  startDate: null,
-                                  endDate: null,
-                                  label: "Nouvelle promo",
-                                }
-                                onAddPromoConfig(product.id, newConfig)
-                                setExpandedProducts((prev) => new Set(prev).add(product.id))
-                              }}
-                            >
-                              <Plus className="size-4" />
-                            </Button>
-                            {activePromoBook && (
-                              <Button
-                                size="sm"
-                                variant={promoBookProductIds.has(product.id) ? "default" : "ghost"}
-                                className="h-7 w-7 p-0"
-                                onClick={() => {
-                                  if (promoBookProductIds.has(product.id)) {
-                                    onRemoveFromPromoBook(product.id)
-                                  } else {
-                                    onAddToPromoBook(product.id)
-                                  }
-                                }}
-                                title={promoBookProductIds.has(product.id) ? "Retirer du PromoBook" : "Ajouter au PromoBook"}
-                              >
-                                <BookOpen className="size-4" />
-                              </Button>
-                            )}
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 hover:bg-muted"
+                            onClick={() => {
+                              const newConfig: PromoConfig = {
+                                id: `pc-${Date.now()}`,
+                                currentPrice: null,
+                                promotionType: null,
+                                promotionValue: null,
+                                minQuantity: null,
+                                moq: null,
+                                som: null,
+                                startDate: null,
+                                endDate: null,
+                                label: "Nouvelle promo",
+                              }
+                              onAddPromoConfig(product.id, newConfig)
+                              setExpandedProducts((prev) => new Set(prev).add(product.id))
+                            }}
+                          >
+                            <Plus className="size-4" />
+                          </Button>
                         </div>
                       </td>
+                      {activePromoBook && (
+                        <td className="p-4 text-left">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={`h-7 w-7 p-0 hover:bg-muted ${promoBookProductIds.has(product.id) ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+                            onClick={() => {
+                              if (promoBookProductIds.has(product.id)) {
+                                onRemoveFromPromoBook(product.id)
+                              } else {
+                                onAddToPromoBook(product.id)
+                              }
+                            }}
+                            title={promoBookProductIds.has(product.id) ? "Retirer du PromoBook" : "Ajouter au PromoBook"}
+                          >
+                            <BookOpen className="size-4" />
+                          </Button>
+                        </td>
+                      )}
                     </tr>
 
                     {/* Expanded Promo Configs */}
                     {isExpanded && hasConfigs && (
                       <tr>
-                        <td colSpan={10} className="bg-muted/20 p-0">
+                        <td colSpan={activePromoBook ? 11 : 10} className="bg-muted/20 p-0">
                           <div className="p-4">
                             <div className="space-y-3">
                               {promoConfigs.map((config, index) => (

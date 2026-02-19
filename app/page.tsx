@@ -826,26 +826,24 @@ export default function ProductManagement() {
                   activePromoBook={activePromoBook}
                   promoBookCount={userPromoBooks.length + 2}
                 />
+                <Button 
+                  onClick={activePromoBook ? handleSavePromoBook : handleValidate} 
+                  size="sm" 
+                  disabled={activePromoBook ? !hasUnsavedChanges : listStatus === "validated"}
+                  variant={activePromoBook && hasUnsavedChanges ? "default" : "outline"}
+                  className="relative"
+                >
+                  <Save className="mr-2 size-4" />
+                  Valider les modifications
+                  {activePromoBook && hasUnsavedChanges && (
+                    <span className="ml-2 size-2 rounded-full bg-destructive" />
+                  )}
+                </Button>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                   <HelpCircle className="size-5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                   <Bell className="size-5" />
-                </Button>
-                <div className="h-6 w-px bg-border" />
-                <Badge variant={listStatus === "validated" ? "default" : "secondary"} className="px-3 py-1">
-                  {listStatus === "validated" ? (
-                    <>
-                      <Check className="mr-1 size-3" />
-                      Validé
-                    </>
-                  ) : (
-                    "Brouillon"
-                  )}
-                </Badge>
-                <Button onClick={handleValidate} size="sm" disabled={listStatus === "validated"}>
-                  <Save className="mr-2 size-4" />
-                  Valider les modifications
                 </Button>
               </div>
             </div>
