@@ -220,13 +220,14 @@ export function ProductTableV2({
                       </td>
                       <td className="p-4 text-left">
                         <Select
-                          value={product.gamme}
+                          value={product.gamme || ""}
                           onValueChange={(v) => {
+                            console.log("[v0] Updating product gamme:", product.id, "to", v)
                             onUpdateProduct(product.id, { gamme: v as "M" | "D" })
                           }}
                         >
                           <SelectTrigger className="h-8 w-16">
-                            <SelectValue />
+                            <SelectValue placeholder="Gamme" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="M">M</SelectItem>
