@@ -788,7 +788,7 @@ export function ProductTableV2({
 
       {/* Bulk Action Sheet */}
       <Sheet open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-xl">
+        <SheetContent side="right" className="w-full p-6 sm:max-w-xl">
           <SheetHeader>
             <SheetTitle>Ajouter une promotion en masse</SheetTitle>
             <SheetDescription>
@@ -796,7 +796,7 @@ export function ProductTableV2({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="grid gap-4 overflow-y-auto py-4">
+          <div className="grid gap-4 overflow-y-auto py-6">
             {/* Label */}
             <div className="grid gap-2">
               <label className="text-sm font-medium">Nom de la promotion</label>
