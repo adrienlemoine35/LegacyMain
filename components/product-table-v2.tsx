@@ -371,7 +371,7 @@ export function ProductTableV2({
                 </th>
                 {activePromoBook && (
                   <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                    Au PromoBook
+                    Dans PromoBook
                   </th>
                 )}
               </tr>
@@ -442,7 +442,7 @@ export function ProductTableV2({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 w-7 p-0 hover:bg-muted"
+                            className="h-7 w-7 p-0 hover:bg-muted hover:text-foreground"
                             onClick={() => {
                               const newConfig: PromoConfig = {
                                 id: `pc-${Date.now()}`,
