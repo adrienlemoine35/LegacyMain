@@ -32,6 +32,7 @@ export function ProductTableV2({
 }: ProductTableV2Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
+  const [showOnlyWithPromo, setShowOnlyWithPromo] = useState(false)
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
   const [editValue, setEditValue] = useState("")
   const { toast } = useToast()
@@ -97,6 +98,11 @@ export function ProductTableV2({
 
   // Filter products by name or promo config labels
   const filteredProducts = products.filter((product) => {
+    // Filter by promo toggle
+    if (showOnlyWithPromo && (!product.promoConfigs || product.promoConfigs.length === 0)) {
+      return false
+    }
+    
     const query = searchQuery.toLowerCase().trim()
     if (!query) return true
     
@@ -112,16 +118,25 @@ export function ProductTableV2({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Rechercher un produit ou un promoparamétrage..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search Bar and Filters */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Rechercher un produit ou un promoparamétrage..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Button
+          variant={showOnlyWithPromo ? "default" : "outline"}
+          onClick={() => setShowOnlyWithPromo(!showOnlyWithPromo)}
+          className="whitespace-nowrap"
+        >
+          Produits avec promotion
+        </Button>
       </div>
 
       {/* Table Section - Horizontal Scroll Only */}
