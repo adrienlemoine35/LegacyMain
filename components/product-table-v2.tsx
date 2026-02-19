@@ -11,10 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search } from "lucide-react"
+import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search, Filter } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { Product, PromotionType, PromoConfig } from "@/app/page"
+
+type ColumnFilters = {
+  reference: Set<string>
+  name: Set<string>
+  category: Set<string>
+  supplier: Set<string>
+  gamme: Set<string>
+}
 
 interface ProductTableV2Props {
   products: Product[]
@@ -36,6 +44,13 @@ export function ProductTableV2({
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
   const [showOnlyWithPromo, setShowOnlyWithPromo] = useState(false)
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
+    reference: new Set(),
+    name: new Set(),
+    category: new Set(),
+    supplier: new Set(),
+    gamme: new Set(),
+  })
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
   const [editValue, setEditValue] = useState("")
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
@@ -110,12 +125,128 @@ export function ProductTableV2({
     setEditValue("")
   }
 
+  // Get unique values for each column
+  // Get unique values for each column
+  const getUniqueValues = (column: keyof ColumnFilters) => {
+    const values = new Set<string>()
+    products.forEach((product) => {
+      if (column === "reference") values.add(product.id)
+      else if (column === "name") values.add(product.name)
+      else if (column === "category") values.add(product.category)
+      else if (column === "supplier") values.add(product.supplier)
+      else if (column === "gamme") values.add(product.gamme)
+    })
+    return Array.from(values).sort()
+  }
+
+  // Column Filter Component
+  const ColumnFilterPopover = ({ column, title }: { column: keyof ColumnFilters; title: string }) => {
+    const [filterSearch, setFilterSearch] = useState("")
+    const uniqueValues = getUniqueValues(column)
+    const activeFilters = columnFilters[column]
+    
+    const filteredValues = uniqueValues.filter((value) =>
+      value.toLowerCase().includes(filterSearch.toLowerCase())
+    )
+
+    const toggleFilter = (value: string) => {
+      setColumnFilters((prev) => {
+        const newFilters = { ...prev }
+        const columnSet = new Set(prev[column])
+        if (columnSet.has(value)) {
+          columnSet.delete(value)
+        } else {
+          columnSet.add(value)
+        }
+        newFilters[column] = columnSet
+        return newFilters
+      })
+    }
+
+    const selectAll = () => {
+      setColumnFilters((prev) => ({
+        ...prev,
+        [column]: new Set(filteredValues),
+      }))
+    }
+
+    const clearAll = () => {
+      setColumnFilters((prev) => ({
+        ...prev,
+        [column]: new Set(),
+      }))
+    }
+
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-auto p-0 hover:bg-transparent">
+            <Filter className={`ml-2 size-3.5 ${activeFilters.size > 0 ? "text-primary" : "text-muted-foreground"}`} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-0" align="start">
+          <div className="flex flex-col">
+            <div className="border-b p-3">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 size-3.5 text-muted-foreground" />
+                <Input
+                  placeholder={`Rechercher ${title.toLowerCase()}...`}
+                  value={filterSearch}
+                  onChange={(e) => setFilterSearch(e.target.value)}
+                  className="h-8 pl-8 text-xs"
+                />
+              </div>
+              <div className="mt-2 flex gap-2">
+                <Button variant="outline" size="sm" onClick={selectAll} className="h-7 flex-1 text-xs">
+                  Tout
+                </Button>
+                <Button variant="outline" size="sm" onClick={clearAll} className="h-7 flex-1 text-xs">
+                  Aucun
+                </Button>
+              </div>
+            </div>
+            <div className="max-h-64 overflow-y-auto p-2">
+              {filteredValues.length === 0 ? (
+                <div className="py-4 text-center text-xs text-muted-foreground">Aucun résultat</div>
+              ) : (
+                filteredValues.map((value) => (
+                  <div
+                    key={value}
+                    className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"
+                  >
+                    <Checkbox
+                      checked={activeFilters.has(value)}
+                      onCheckedChange={() => toggleFilter(value)}
+                    />
+                    <span className="flex-1 text-xs">{value}</span>
+                  </div>
+                ))
+              )}
+            </div>
+            {activeFilters.size > 0 && (
+              <div className="border-t p-2 text-xs text-muted-foreground">
+                {activeFilters.size} filtre(s) actif(s)
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
   // Filter products by name or promo config labels
   const filteredProducts = products.filter((product) => {
     // Filter by promo toggle
     if (showOnlyWithPromo && (!product.promoConfigs || product.promoConfigs.length === 0)) {
       return false
     }
+
+    // Column filters
+    if (columnFilters.reference.size > 0 && !columnFilters.reference.has(product.id)) return false
+    if (columnFilters.name.size > 0 && !columnFilters.name.has(product.name)) return false
+    if (columnFilters.category.size > 0 && !columnFilters.category.has(product.category)) return false
+    if (columnFilters.supplier.size > 0 && !columnFilters.supplier.has(product.supplier)) return false
+    if (columnFilters.gamme.size > 0 && !columnFilters.gamme.has(product.gamme)) return false
     
     const query = searchQuery.toLowerCase().trim()
     if (!query) return true
@@ -173,16 +304,28 @@ export function ProductTableV2({
                 </th>
                 <th className="w-12 p-4"></th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                  Référence
+                  <div className="flex items-center">
+                    Référence
+                    <ColumnFilterPopover column="reference" title="Référence" />
+                  </div>
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                  Nom du produit
+                  <div className="flex items-center">
+                    Nom du produit
+                    <ColumnFilterPopover column="name" title="Nom du produit" />
+                  </div>
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                  Rayon
+                  <div className="flex items-center">
+                    Rayon
+                    <ColumnFilterPopover column="category" title="Rayon" />
+                  </div>
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                  Fournisseur
+                  <div className="flex items-center">
+                    Fournisseur
+                    <ColumnFilterPopover column="supplier" title="Fournisseur" />
+                  </div>
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
                   Stock
@@ -191,7 +334,10 @@ export function ProductTableV2({
                   Prix initial
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
-                  Gamme
+                  <div className="flex items-center">
+                    Gamme
+                    <ColumnFilterPopover column="gamme" title="Gamme" />
+                  </div>
                 </th>
                 <th className="border-l border-border p-4 text-left text-xs font-medium uppercase tracking-wide text-secondary">
                   Nb Promos
