@@ -482,8 +482,133 @@ const MOCK_PRODUCTS = [
 
 export type Product = (typeof MOCK_PRODUCTS)[0]
 
+// Product Group / Palette type
+export interface ProductGroup {
+  id: string
+  name: string
+  description: string
+  category: string
+  productIds: string[] // References to products in this group
+  products: Product[] // Actual product objects for display
+  totalPrice: number // Sum of all product prices
+  stock: number // Minimum stock across all products
+  status: "draft" | "validated"
+  gamme: "M" | "D"
+  promoConfigs: PromoConfig[]
+}
+
+// Mock data for Product Groups
+const MOCK_PRODUCT_GROUPS: ProductGroup[] = [
+  {
+    id: "PG001",
+    name: "Pack Outillage Pro Bosch",
+    description: "Ensemble complet d'outillage électrique professionnel",
+    category: "Outillage électrique",
+    productIds: ["P001", "P002", "P003"],
+    products: [],
+    totalPrice: 449.97,
+    stock: 25,
+    status: "draft",
+    gamme: "M",
+    promoConfigs: [
+      {
+        id: "pgc1",
+        currentPrice: 399.99,
+        promotionType: "absolute",
+        promotionValue: 49.98,
+        minQuantity: 1,
+        moq: 5,
+        som: 1,
+        startDate: "2024-06-01",
+        endDate: "2024-08-31",
+        label: "Pack Été Professionnel",
+      },
+    ],
+  },
+  {
+    id: "PG002",
+    name: "Palette Peinture Murale 50L",
+    description: "Palette de 50L de peinture murale blanche haute qualité",
+    category: "Peinture",
+    productIds: ["P008", "P009", "P010"],
+    products: [],
+    totalPrice: 249.95,
+    stock: 120,
+    status: "draft",
+    gamme: "M",
+    promoConfigs: [
+      {
+        id: "pgc2",
+        currentPrice: 199.99,
+        promotionType: "percentage",
+        promotionValue: 20,
+        minQuantity: 1,
+        moq: 10,
+        som: 5,
+        startDate: "2024-05-01",
+        endDate: "2024-06-30",
+        label: "Promo Palette Printemps",
+      },
+    ],
+  },
+  {
+    id: "PG003",
+    name: "Ensemble Carrelage Salle de Bain",
+    description: "Kit complet carrelage + joint pour salle de bain 10m²",
+    category: "Carrelage",
+    productIds: ["P019", "P020", "P021"],
+    products: [],
+    totalPrice: 159.97,
+    stock: 45,
+    status: "draft",
+    gamme: "D",
+    promoConfigs: [],
+  },
+  {
+    id: "PG004",
+    name: "Pack Revêtement Sol Complet",
+    description: "Ensemble parquet + sous-couche + accessoires pour 20m²",
+    category: "Revêtement de sol",
+    productIds: ["P022", "P023", "P024"],
+    products: [],
+    totalPrice: 549.77,
+    stock: 67,
+    status: "draft",
+    gamme: "M",
+    promoConfigs: [
+      {
+        id: "pgc4",
+        currentPrice: 479.99,
+        promotionType: "absolute",
+        promotionValue: 69.78,
+        minQuantity: 1,
+        moq: 3,
+        som: 1,
+        startDate: "2024-07-01",
+        endDate: "2024-09-30",
+        label: "Offre Rénovation",
+      },
+    ],
+  },
+  {
+    id: "PG005",
+    name: "Palette Quincaillerie Pro",
+    description: "Assortiment de quincaillerie pour professionnels - 500 pièces",
+    category: "Quincaillerie",
+    productIds: ["P004", "P005", "P006"],
+    products: [],
+    totalPrice: 189.97,
+    stock: 89,
+    status: "validated",
+    gamme: "D",
+    promoConfigs: [],
+  },
+]
+
 export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS)
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>(MOCK_PRODUCT_GROUPS)
+  const [viewMode, setViewMode] = useState<"products" | "groups">("products")
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [listStatus, setListStatus] = useState<"draft" | "pending" | "validated">("draft")
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
