@@ -972,8 +972,9 @@ export default function ProductManagement() {
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                   <HelpCircle className="size-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
                   <Bell className="size-5" />
+                  <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full"></span>
                 </Button>
               </div>
             </div>
