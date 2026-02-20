@@ -515,6 +515,135 @@ export function PromoBookPanel({
         </SheetContent>
       </Sheet>
 
+      {/* Share PromoBook Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Partager le PromoBook</DialogTitle>
+            <DialogDescription>
+              Gérez les accès à "{sharePromoBook?.name}"
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Owner Section */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <User className="size-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{sharePromoBook?.owner}</p>
+                    <p className="text-xs text-muted-foreground">{sharePromoBook?.ownerEmail}</p>
+                  </div>
+                </div>
+                <Badge variant="default" className="bg-primary">
+                  Propriétaire
+                </Badge>
+              </div>
+            </div>
+
+            {/* Add User Section */}
+            <div className="space-y-3">
+              <Label>Ajouter un utilisateur</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Email de l'utilisateur"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="flex-1"
+                  type="email"
+                />
+                <Select
+                  value={newUserRole}
+                  onValueChange={(value) => setNewUserRole(value as "viewer" | "editor")}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Lecteur</SelectItem>
+                    <SelectItem value="editor">Éditeur</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddUser} size="icon">
+                  <UserPlus className="size-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Les lecteurs peuvent consulter le PromoBook. Les éditeurs peuvent le modifier.
+              </p>
+            </div>
+
+            {/* Shared Users List */}
+            {sharePromoBook && sharePromoBook.sharedWith.length > 0 && (
+              <div className="space-y-3">
+                <Label>Personnes ayant accès ({sharePromoBook.sharedWith.length})</Label>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {sharePromoBook.sharedWith.map((user) => (
+                    <div
+                      key={user.email}
+                      className="flex items-center justify-between rounded-lg border border-border p-3"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="size-8 rounded-full bg-muted flex items-center justify-center">
+                          <User className="size-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Ajouté le {formatDate(user.addedAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={user.role}
+                          onValueChange={(value) =>
+                            handleChangeUserRole(user.email, value as "viewer" | "editor")
+                          }
+                        >
+                          <SelectTrigger className="w-28 h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="viewer">Lecteur</SelectItem>
+                            <SelectItem value="editor">Éditeur</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRemoveUser(user.email)}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sharePromoBook && sharePromoBook.sharedWith.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Share2 className="size-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Ce PromoBook n'est pas encore partagé</p>
+                <p className="text-xs mt-1">Ajoutez des utilisateurs ci-dessus pour partager</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setShowShareDialog(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create PromoBook Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-md">
