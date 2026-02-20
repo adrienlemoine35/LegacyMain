@@ -12,23 +12,6 @@ export const metadata: Metadata = {
   title: "Gestion Produits - Expert Prix d'Achat",
   description: "Interface technique pour la modification en masse des informations produits",
   generator: "v0.app",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
 }
 
 export default function RootLayout({

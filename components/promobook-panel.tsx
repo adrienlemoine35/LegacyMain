@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -28,6 +35,9 @@ import {
   User,
   Package,
   MoreHorizontal,
+  Share2,
+  Trash2,
+  UserPlus,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -36,17 +46,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+export interface PromoBookSharedUser {
+  email: string
+  role: "viewer" | "editor"
+  addedAt: string
+}
+
 export interface PromoBook {
   id: string
   name: string
   description?: string
   createdAt: string
   owner: string
+  ownerEmail: string
   productCount: number
   tags: string[]
   products: PromoBookProduct[]
   filters: PromoBookFilters
   sorts: PromoBookSort[]
+  sharedWith: PromoBookSharedUser[]
 }
 
 export interface PromoBookProduct {
@@ -96,8 +114,21 @@ const MOCK_PROMOBOOKS: PromoBook[] = [
     description: "Réductions sur l'outillage électrique Bosch et Makita",
     createdAt: "2024-01-15",
     owner: "Jean Dupont",
+    ownerEmail: "jean.dupont@example.com",
     productCount: 5,
     tags: ["Outillage électrique", "Bosch", "Makita"],
+    sharedWith: [
+      {
+        email: "marie.martin@example.com",
+        role: "editor",
+        addedAt: "2024-01-20",
+      },
+      {
+        email: "paul.bernard@example.com",
+        role: "viewer",
+        addedAt: "2024-01-22",
+      },
+    ],
     products: [
       {
         productId: "P001",
@@ -178,8 +209,10 @@ const MOCK_PROMOBOOKS: PromoBook[] = [
     description: "Offres spéciales sur toute la gamme peinture",
     createdAt: "2024-01-10",
     owner: "Marie Martin",
+    ownerEmail: "marie.martin@example.com",
     productCount: 4,
     tags: ["Peinture"],
+    sharedWith: [],
     products: [
       {
         productId: "P009",
@@ -256,6 +289,10 @@ export function PromoBookPanel({
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newPromoBookName, setNewPromoBookName] = useState("")
   const [newPromoBookDescription, setNewPromoBookDescription] = useState("")
+  const [showShareDialog, setShowShareDialog] = useState(false)
+  const [sharePromoBook, setSharePromoBook] = useState<PromoBook | null>(null)
+  const [newUserEmail, setNewUserEmail] = useState("")
+  const [newUserRole, setNewUserRole] = useState<"viewer" | "editor">("viewer")
 
   const allPromoBooks = [...MOCK_PROMOBOOKS, ...promoBooks]
 
@@ -280,6 +317,60 @@ export function PromoBookPanel({
       day: "numeric",
       month: "short",
       year: "numeric",
+    })
+  }
+
+  const handleShareClick = (promoBook: PromoBook, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSharePromoBook(promoBook)
+    setShowShareDialog(true)
+  }
+
+  const handleAddUser = () => {
+    if (!sharePromoBook || !newUserEmail.trim()) return
+    
+    // Check if user already has access
+    if (sharePromoBook.sharedWith.some((u) => u.email === newUserEmail)) {
+      alert("Cet utilisateur a déjà accès à ce PromoBook")
+      return
+    }
+
+    // Add new user (in real app, this would be an API call)
+    const updatedSharedWith = [
+      ...sharePromoBook.sharedWith,
+      {
+        email: newUserEmail,
+        role: newUserRole,
+        addedAt: new Date().toISOString(),
+      },
+    ]
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: updatedSharedWith,
+    })
+
+    setNewUserEmail("")
+    setNewUserRole("viewer")
+  }
+
+  const handleRemoveUser = (email: string) => {
+    if (!sharePromoBook) return
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: sharePromoBook.sharedWith.filter((u) => u.email !== email),
+    })
+  }
+
+  const handleChangeUserRole = (email: string, newRole: "viewer" | "editor") => {
+    if (!sharePromoBook) return
+
+    setSharePromoBook({
+      ...sharePromoBook,
+      sharedWith: sharePromoBook.sharedWith.map((u) =>
+        u.email === email ? { ...u, role: newRole } : u
+      ),
     })
   }
 
@@ -367,10 +458,15 @@ export function PromoBookPanel({
                       <DropdownMenuItem onClick={() => onActivatePromoBook(promoBook)}>
                         Ouvrir
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleShareClick(promoBook, e)}>
+                        <Share2 className="mr-2 size-4" />
+                        Partager
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDeletePromoBook(promoBook.id)}
                         className="text-destructive"
                       >
+                        <Trash2 className="mr-2 size-4" />
                         Supprimer
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -418,6 +514,135 @@ export function PromoBookPanel({
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Share PromoBook Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Partager le PromoBook</DialogTitle>
+            <DialogDescription>
+              Gérez les accès à "{sharePromoBook?.name}"
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Owner Section */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <User className="size-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{sharePromoBook?.owner}</p>
+                    <p className="text-xs text-muted-foreground">{sharePromoBook?.ownerEmail}</p>
+                  </div>
+                </div>
+                <Badge variant="default" className="bg-primary">
+                  Propriétaire
+                </Badge>
+              </div>
+            </div>
+
+            {/* Add User Section */}
+            <div className="space-y-3">
+              <Label>Ajouter un utilisateur</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Email de l'utilisateur"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="flex-1"
+                  type="email"
+                />
+                <Select
+                  value={newUserRole}
+                  onValueChange={(value) => setNewUserRole(value as "viewer" | "editor")}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Lecteur</SelectItem>
+                    <SelectItem value="editor">Éditeur</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddUser} size="icon">
+                  <UserPlus className="size-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Les lecteurs peuvent consulter le PromoBook. Les éditeurs peuvent le modifier.
+              </p>
+            </div>
+
+            {/* Shared Users List */}
+            {sharePromoBook && sharePromoBook.sharedWith.length > 0 && (
+              <div className="space-y-3">
+                <Label>Personnes ayant accès ({sharePromoBook.sharedWith.length})</Label>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {sharePromoBook.sharedWith.map((user) => (
+                    <div
+                      key={user.email}
+                      className="flex items-center justify-between rounded-lg border border-border p-3"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="size-8 rounded-full bg-muted flex items-center justify-center">
+                          <User className="size-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Ajouté le {formatDate(user.addedAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={user.role}
+                          onValueChange={(value) =>
+                            handleChangeUserRole(user.email, value as "viewer" | "editor")
+                          }
+                        >
+                          <SelectTrigger className="w-28 h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="viewer">Lecteur</SelectItem>
+                            <SelectItem value="editor">Éditeur</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRemoveUser(user.email)}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sharePromoBook && sharePromoBook.sharedWith.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Share2 className="size-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Ce PromoBook n'est pas encore partagé</p>
+                <p className="text-xs mt-1">Ajoutez des utilisateurs ci-dessus pour partager</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setShowShareDialog(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create PromoBook Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
