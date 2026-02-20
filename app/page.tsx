@@ -643,6 +643,11 @@ export default function ProductManagement() {
     setHasUnsavedChanges(true)
   }
 
+  const handleImportProducts = (importedProducts: Product[]) => {
+    // Add imported products to the existing products list
+    setProducts((prev) => [...prev, ...importedProducts])
+  }
+
   const handleSavePromoBook = () => {
     if (!activePromoBook) return
     
@@ -873,6 +878,7 @@ export default function ProductManagement() {
             onRemoveFromPromoBook={handleRemoveFromPromoBook}
             hasUnsavedChanges={hasUnsavedChanges}
             onSavePromoBook={handleSavePromoBook}
+            onImportProducts={handleImportProducts}
           />
         </div>
       </div>

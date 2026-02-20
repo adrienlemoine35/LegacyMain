@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search, Filter, BookOpen } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { X, ChevronDown, ChevronRight, Plus, Pencil, CalendarIcon, Euro, Percent, Gift, Search, Filter, BookOpen, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import type { Product, PromotionType, PromoConfig, PromoBook } from "@/app/page"
@@ -37,6 +39,7 @@ interface ProductTableV2Props {
   onRemoveFromPromoBook: (productId: string) => void
   hasUnsavedChanges: boolean
   onSavePromoBook: () => void
+  onImportProducts: (products: Product[]) => void
 }
 
 export function ProductTableV2({
@@ -52,6 +55,7 @@ export function ProductTableV2({
   onRemoveFromPromoBook,
   hasUnsavedChanges,
   onSavePromoBook,
+  onImportProducts,
 }: ProductTableV2Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
@@ -67,6 +71,8 @@ export function ProductTableV2({
   const [editingField, setEditingField] = useState<{ productId: string; configId: string; field: string } | null>(null)
   const [editValue, setEditValue] = useState("")
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
   const [bulkPromoData, setBulkPromoData] = useState<Partial<PromoConfig>>({
     label: "",
     promotionType: null,
@@ -293,6 +299,10 @@ export function ProductTableV2({
             className="pl-10"
           />
         </div>
+        <Button onClick={() => setImportDialogOpen(true)} variant="outline" className="whitespace-nowrap">
+          <Upload className="mr-2 size-4" />
+          Importer
+        </Button>
         <div className="flex items-center gap-2 whitespace-nowrap rounded-md border border-border bg-white px-3 py-2">
           <Switch
             checked={showOnlyWithPromo}
@@ -1032,6 +1042,149 @@ export function ProductTableV2({
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Import Excel Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Importer des produits</DialogTitle>
+            <DialogDescription>
+              Importez un fichier Excel avec la même structure que la base de données
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="excel-file">Fichier Excel</Label>
+              <Input
+                id="excel-file"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    setImportFile(file)
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Formats acceptés: .xlsx, .xls, .csv
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <h4 className="text-sm font-medium mb-2">Structure attendue:</h4>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>• <strong>id</strong>: Référence produit (ex: PROD001)</p>
+                <p>• <strong>name</strong>: Nom du produit</p>
+                <p>• <strong>category</strong>: Catégorie (ex: Outillage électrique)</p>
+                <p>• <strong>supplier</strong>: Fournisseur (ex: Bosch)</p>
+                <p>• <strong>stock</strong>: Stock disponible (nombre)</p>
+                <p>• <strong>initialPrice</strong>: Prix initial (nombre)</p>
+                <p>• <strong>gamme</strong>: M ou D</p>
+                <p>• <strong>status</strong>: draft ou validated</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => {
+                if (!importFile) {
+                  toast({
+                    title: "Erreur",
+                    description: "Veuillez sélectionner un fichier",
+                    variant: "destructive",
+                  })
+                  return
+                }
+
+                // Create FileReader to read the file
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                  try {
+                    const text = e.target?.result as string
+                    const lines = text.split("\n").filter((line) => line.trim())
+                    
+                    if (lines.length < 2) {
+                      throw new Error("Le fichier est vide ou mal formaté")
+                    }
+
+                    // Parse CSV (simple implementation)
+                    const headers = lines[0].split(",").map((h) => h.trim())
+                    const importedProducts: Product[] = []
+
+                    for (let i = 1; i < lines.length; i++) {
+                      const values = lines[i].split(",").map((v) => v.trim())
+                      const product: any = {}
+
+                      headers.forEach((header, index) => {
+                        product[header] = values[index]
+                      })
+
+                      // Convert to proper types
+                      const newProduct: Product = {
+                        id: product.id || `IMPORT-${Date.now()}-${i}`,
+                        name: product.name || "Produit importé",
+                        category: product.category || "Non catégorisé",
+                        supplier: product.supplier || "Inconnu",
+                        stock: parseInt(product.stock) || 0,
+                        initialPrice: parseFloat(product.initialPrice) || 0,
+                        currentPrice: null,
+                        gamme: (product.gamme === "M" || product.gamme === "D" ? product.gamme : "M") as "M" | "D",
+                        promotionType: null,
+                        promotionValue: null,
+                        minQuantity: null,
+                        startDate: null,
+                        endDate: null,
+                        status: (product.status === "validated" ? "validated" : "draft") as "draft" | "validated",
+                        promoConfigs: [],
+                      }
+
+                      importedProducts.push(newProduct)
+                    }
+
+                    if (importedProducts.length > 0) {
+                      onImportProducts(importedProducts)
+                      toast({
+                        title: "Import réussi",
+                        description: `${importedProducts.length} produit(s) importé(s)`,
+                      })
+                      setImportDialogOpen(false)
+                      setImportFile(null)
+                    } else {
+                      throw new Error("Aucun produit valide trouvé")
+                    }
+                  } catch (error) {
+                    console.error("[v0] Import error:", error)
+                    toast({
+                      title: "Erreur d'import",
+                      description: error instanceof Error ? error.message : "Impossible de lire le fichier",
+                      variant: "destructive",
+                    })
+                  }
+                }
+
+                reader.onerror = () => {
+                  toast({
+                    title: "Erreur",
+                    description: "Impossible de lire le fichier",
+                    variant: "destructive",
+                  })
+                }
+
+                reader.readAsText(importFile)
+              }}
+              disabled={!importFile}
+            >
+              Importer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
